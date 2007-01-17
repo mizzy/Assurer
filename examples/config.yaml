@@ -1,0 +1,22 @@
+global:
+  no_diag: 0
+
+test:
+  - module: HTTP
+    name: HTTP Test
+    config:
+      content: It works!
+    role: web
+
+format:
+  - module: Text
+#    config:
+#      css_uri: htmlmatrix.css
+
+publish:
+  - module: Term
+    
+hosts:
+  web:
+    - svn.mizzy.org
+    - trac.mizzy.org
