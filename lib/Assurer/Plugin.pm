@@ -26,7 +26,7 @@ sub pre_run  {
 
 sub log {
     my $self = shift;
-    Assurer->context->log(@_);
+    $self->{context}->log(@_);
 }
 
 1;

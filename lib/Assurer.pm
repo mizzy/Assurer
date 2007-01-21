@@ -8,7 +8,7 @@ use version;our $VERSION = qv('0.0.1');
 
 use base qw( Class::Accessor::Fast );
 use Assurer::ConfigLoader;
-use Assurer::Test;
+use Assurer::Dispatch;
 use UNIVERSAL::require;
 use Encode;
 
@@ -39,10 +39,8 @@ sub new {
     $self->{config}->{global}->{host} ||= $opts->{host};
     Assurer->set_context($self);
 
-    $self->{test} = Assurer::Test->new;
-
     if ( eval { require Term::Encoding } ) {
-        $self->{config}->{global}->{log}->{encoding} ||= Term::Encoding::get_encoding();
+        $self->{confing}->{global}->{log}->{encoding} ||= Term::Encoding::get_encoding();
     }
 
     if ( my $hosts = $self->{config}->{hosts} ) {
@@ -70,7 +68,10 @@ sub run {
 
     $self->load_plugins;
 
-    $self->run_hook('test');
+    my $dispatch = Assurer::Dispatch->new({
+        context => $context,
+    });
+    $dispatch->run;
 
     $self->run_hook('format');
 
@@ -84,25 +85,15 @@ sub run_hook {
     $args ||= {};
 
     for my $plugin ( @{ $self->{hooks}->{$hook} || [] } ) {
-        if ( $hook eq 'test' and $self->{hosts} and !defined $plugin->conf->{host} ) {
-            for my $host ( @{ $self->{hosts} } ) {
-                next if ( $plugin->{role} and ( !defined $host->{role} or $host->{role} ne $plugin->{role} ) );
-                $plugin->conf->{host} = $host->{host};
-                $plugin->pre_run($context, $args);
-                $plugin->post_run($context, $args) if $plugin->can('post_run');
-            }
-        }
-        else {
-            $plugin->pre_run($context, $args);
-            $plugin->post_run($context, $args) if $plugin->can('post_run');
-        }
+        $plugin->pre_run($context, $args);
+        $plugin->post_run($context, $args) if $plugin->can('post_run');
     }
 }
 
 sub load_plugins {
     my $self = shift;
 
-    for my $hook ( qw/test format publish/ ) {
+    for my $hook ( qw/format publish/ ) {
         for my $plugin ( @{ $self->{config}->{$hook} || [] } ) {
             my $class = "Assurer::Plugin::" . ucfirst $hook . "::$plugin->{module}";
             $class->use or die $@;
@@ -153,8 +144,7 @@ sub formats {
 }
 
 sub conf {
-    my $self = shift;
-    return $self->{config}->{global};
+    shift->{config}->{global};
 }
 
 1; # Magic true value required at end of module
