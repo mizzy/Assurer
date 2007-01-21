@@ -4,7 +4,6 @@ global:
 test:
   - module: HTTP
     name: HTTP Test
-    host: svn.mizzy.org
     config:
       content: It works!
     role: web
@@ -17,7 +16,7 @@ format:
 publish:
   - module: Term
     
-#hosts:
-#  web:
-#    - svn.mizzy.org
-#    - trac.mizzy.org
+hosts:
+  web:
+    - svn.mizzy.org
+    - trac.mizzy.org

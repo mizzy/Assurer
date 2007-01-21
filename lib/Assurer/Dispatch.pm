@@ -23,8 +23,20 @@ sub new {
 sub run {
     my $self = shift;
 
-    for my $conf ( @{ $self->{context}->{config}->{test} } ) {
-        $self->_create_session($conf);
+    my $context = $self->{context};
+
+    my $hosts = $context->hosts;
+    for my $plugin ( @{ $self->{context}->{config}->{test} } ) {
+        if ( @$hosts and !defined $plugin->{host} ) {
+            for my $host ( @$hosts ) {
+                next if ( $plugin->{role} and ( !defined $host->{role} or $host->{role} ne $plugin->{role} ) );
+                $plugin->{host} = $host->{host};
+                $self->_create_session($plugin);
+            }
+        }
+        else {
+            $self->_create_session($plugin);
+        }
     }
 
     $poe_kernel->sig( CHLD => '' );
@@ -32,9 +44,9 @@ sub run {
 }
 
 sub _create_session {
-    my ( $self, $conf ) = @_;
+    my ( $self, $plugin ) = @_;
 
-    my $encoded_conf = MIME::Base64::encode( Dump($conf) );
+    my $encoded_conf = MIME::Base64::encode( Dump($plugin) );
     $encoded_conf =~ s/\n//g;
 
     my $encoded_context = MIME::Base64::encode( Dump($self->{context}) );
@@ -44,12 +56,13 @@ sub _create_session {
             { _start    => sub {
                   my ($kernel, $heap, $session) = @_[KERNEL, HEAP, SESSION];
 
-                  $heap->{name}  = $conf->{name};
+                  $heap->{name}   = $plugin->{name};
                   $heap->{stdout} = [];
                   $heap->{stderr} = [];
 
-                  $heap->{tap} = Test::TAP::Model->new;
+                  $heap->{tap}       = Test::TAP::Model->new;
                   $heap->{test_file} = $heap->{tap}->start_file( $heap->{name} );
+
                   $heap->{tap}->{meat}->{start_time} = time;
 
                   $heap->{child} = POE::Wheel::Run->new(

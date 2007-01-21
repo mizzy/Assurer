@@ -147,6 +147,10 @@ sub conf {
     shift->{config}->{global};
 }
 
+sub hosts {
+    shift->{hosts} || [];
+}
+
 1; # Magic true value required at end of module
 __END__
 
