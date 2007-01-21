@@ -11,7 +11,9 @@ use vars qw( @ISA @EXPORT $AUTOLOAD );
 
 @ISA = qw( Exporter );
 @EXPORT = qw(
-                ok is_num like
+                ok is_eq is_num isnt_eq isnt_num
+                like unlike maybe_regex cmp_ok
+                BAIL_OUT skip todo_skip
         );
 
 my $test = Test::Builder->new;
