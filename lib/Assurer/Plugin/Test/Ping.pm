@@ -9,7 +9,6 @@ use Net::Ping;
 sub run {
     my ( $self, $context, $args ) = @_;
 
-    my $test = $context->test;
     my $conf = $self->conf;
 
     my $host     = $conf->{host}     || $context->conf->{host};
@@ -19,7 +18,7 @@ sub run {
     my $ping = Net::Ping->new($protocol);
     $ping->hires(1);
     my ($ret,$duration,$ip) = $ping->ping($host, $timeout);
-    $test->ok( $ret, "ping ok $host, $ret, $duration, $ip");
+    ok( $ret, "ping ok $host, $ret, $duration, $ip");
 }
 
 1;

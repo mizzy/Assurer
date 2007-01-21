@@ -9,7 +9,6 @@ use Cache::Memcached;
 sub run {
     my ( $self, $context, $args ) = @_;
 
-    my $test = $context->test;
     my $conf = $self->conf;
 
     my $host = $conf->{host} || $context->conf->{host};
@@ -18,9 +17,9 @@ sub run {
     my $memd = Cache::Memcached->new( { servers => ["$host:$port"], } );
 
     my $slabs = $memd->stats('slabs');
-    $test->ok( $slabs, "can get slabs $host" );
+    ok( $slabs, "can get slabs $host" );
     if ($slabs) {
-        $test->like( $slabs->{hosts}->{"$host:$port"}->{slabs}, qr/STAT/, "valid slab $host");
+        like( $slabs->{hosts}->{"$host:$port"}->{slabs}, qr/STAT/, "valid slab $host");
     }
 }
 

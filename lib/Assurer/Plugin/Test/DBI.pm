@@ -9,7 +9,6 @@ use DBI;
 sub run {
     my ( $self, $context, $args ) = @_;
 
-    my $test = $context->test;
     my $conf = $self->conf;
 
     my $host     = $conf->{host}     || $context->conf->{host};
@@ -24,8 +23,8 @@ sub run {
         $dbh = DBI->connect( sprintf( $dsn, $host ),
             $user, $password, { RaiseError => 1, AutoCommit => 1 } );
     };
-    $test->ok(! $@, "not error $@");
-    $test->ok($dbh && $dbh->ping, 'ping');
+    ok(! $@, "not error $@");
+    ok($dbh && $dbh->ping, 'ping');
 }
 
 1;

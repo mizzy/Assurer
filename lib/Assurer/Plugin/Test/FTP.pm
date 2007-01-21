@@ -8,7 +8,6 @@ use Net::FTP;
 sub run {
     my ( $self, $context, $args ) = @_;
 
-    my $test = $context->test;
     my $conf = $self->conf;
 
     my $host     = $conf->{host}     || $context->conf->{host};
@@ -16,8 +15,8 @@ sub run {
     my $password = $conf->{password} || '';
 
     my $ftp = Net::FTP->new($host);
-    $test->ok($ftp, "connect to $host");
-    $test->ok($ftp && $ftp->login($user, $password), "login to $host");
+    ok($ftp, "connect to $host");
+    ok($ftp && $ftp->login($user, $password), "login to $host");
 }
 
 1;

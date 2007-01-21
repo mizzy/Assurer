@@ -9,14 +9,13 @@ use Net::SMTP;
 sub run {
     my ( $self, $context, $args ) = @_;
 
-    my $test = $context->test;
     my $conf = $self->conf;
 
     my $host     = $conf->{host}     || $context->conf->{host};
     my $timeout  = $conf->{timeout}  || 10;
 
     my $smtp = Net::SMTP->new(Host => $host, Timeout => $timeout);
-    $test->ok($smtp, "smtp ok $host");
+    ok($smtp, "smtp ok $host");
 }
 
 1;
