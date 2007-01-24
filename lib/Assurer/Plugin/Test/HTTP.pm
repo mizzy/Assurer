@@ -12,7 +12,8 @@ sub run {
 
     my $conf = $self->conf;
 
-    my $host = $conf->{host} || $context->conf->{host};
+    my $host  = $conf->{host} || $context->conf->{host};
+    my $agent = $conf->{agent} || "Assurer/$Assurer::VERSION (http://assurer.jp/)";
 
     my $port = $conf->{port} || '80';
     my $path = $conf->{path} || '/';
@@ -20,7 +21,7 @@ sub run {
     my $url = "http://$host:$port$path";
 
     my $ua = LWP::UserAgent->new;
-    $ua->agent("Assurer/$Assurer::VERSION (http://mizzy.org/)");
+    $ua->agent($agent);
 
     my $req = HTTP::Request->new( GET => $url );
     my $res = $ua->request($req);

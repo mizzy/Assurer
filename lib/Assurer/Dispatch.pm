@@ -26,11 +26,11 @@ sub run {
     my $context = $self->{context};
 
     my $hosts = $context->hosts;
-    for my $plugin ( @{ $self->{context}->{config}->{test} } ) {
-        if ( @$hosts and !defined $plugin->{host} ) {
+    for my $plugin ( @{ $context->{config}->{test} } ) {
+        if ( @$hosts and !defined $plugin->{config}->{host} ) {
             for my $host ( @$hosts ) {
                 next if ( $plugin->{role} and ( !defined $host->{role} or $host->{role} ne $plugin->{role} ) );
-                $plugin->{host} = $host->{host};
+                $plugin->{config}->{host} = $host->{host};
                 $self->_create_session($plugin);
             }
         }
@@ -50,6 +50,7 @@ sub _create_session {
     $encoded_conf =~ s/\n//g;
 
     my $encoded_context = MIME::Base64::encode( Dump($self->{context}) );
+    $encoded_context =~ s/\n//g;
 
     POE::Session->create(
         inline_states =>
@@ -67,7 +68,10 @@ sub _create_session {
 
                   $heap->{child} = POE::Wheel::Run->new(
                       Program     => [ $self->{cmd} ],
-                      ProgramArgs => [ "--config=$encoded_conf", "--context=$encoded_context" ],
+                      ProgramArgs => [
+                          "--config=$encoded_conf",
+                          "--context=$encoded_context",
+                      ],
                       StdoutEvent => "stdout",
                       StderrEvent => "stderr",
                       CloseEvent  => "close",
