@@ -3,47 +3,58 @@ package Assurer::Test;
 use strict;
 use warnings;
 
-use Test::Builder;
-use Test::TAP::Model;
-
 require Exporter;
 use vars qw( @ISA @EXPORT $AUTOLOAD );
 
 @ISA = qw( Exporter );
-@EXPORT = qw(
-                ok is_eq is_num isnt_eq isnt_num
-                like unlike maybe_regex cmp_ok
-                BAIL_OUT skip todo_skip
-        );
+@EXPORT = qw( is like );
 
-my $test = Test::Builder->new;
-$test->plan('no_plan');
+my $count = 0;
 
 sub new {
     my $class = shift;
-    my $self = { };
+    my $self = {
+        count => \$count,
+    };
     bless $self, $class;
     return $self;
 }
 
-sub init {
-
+sub decr_count {
+    my $self = shift;
+    ${$self->{count}}--;
 }
 
-sub AUTOLOAD {
-     my $func   = $AUTOLOAD;
-     return if $func =~ /::DESTROY$/;
+sub is {
+    my ( $got, $expected, $name ) = @_;
+    $name ||= '';
 
-     my ($class,$method) = $func =~ /(.+)::(.+)$/;
+    my $result;
+    if ( $got eq $expected ) {
+        $result = 'ok';
+    }
+    else {
+        $result = 'not ok';
+    }
 
-     my $code   = sub {
-         no strict 'refs';
-         $test->$method(@_);
-     };
+    $count++;
+    return "$result $count - $name";
+}
 
-     no strict 'refs';
-     *{$func} = $code;
-     goto &$code;
+sub like {
+    my ( $got, $expected, $name ) = @_;
+    $name ||= '';
+
+    my $result;
+    if ( $got =~ $expected ) {
+        $result = 'ok';
+    }
+    else {
+        $result = 'not ok';
+    }
+
+    $count++;
+    return "$result $count - $name";
 }
 
 1;

@@ -9,14 +9,23 @@ use Assurer::Test;
 sub init {
     my $self = shift;
     $self->{name} ||= 'no name';
-
+    $self->{tests} = [];
+    $self->{test} = Assurer::Test->new;
     return $self;
+}
+
+sub register_tests {
+    my ( $self, @tests ) = @_;
+    push @{ $self->{tests} }, @tests;
+}
+
+sub tests {
+    return shift->{tests};
 }
 
 sub pre_run {
     my $self = shift;
     $self->log( info => qq{Testing $self->{name} ...}, caller => ref $self );
-    $self->run(@_);
 }
 
 sub post_run {

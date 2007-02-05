@@ -106,6 +106,8 @@ sub load_plugins {
 sub log {
     my ( $self, $level, $msg, %opts ) = @_;
 
+    return unless $self->should_log($level);
+
     my $caller = $opts{caller};
 
     unless ($caller) {
@@ -149,6 +151,18 @@ sub conf {
 
 sub hosts {
     shift->{hosts} || [];
+}
+
+my %levels = (
+    debug => 0,
+    warn  => 1,
+    info  => 2,
+    error => 3,
+);
+
+sub should_log {
+    my($self, $level) = @_;
+    $levels{$level} >= $levels{$self->conf->{log}->{level}};
 }
 
 1; # Magic true value required at end of module

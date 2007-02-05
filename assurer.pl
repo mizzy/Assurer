@@ -13,7 +13,7 @@ use Assurer;
 my $config = File::Spec->catfile($FindBin::Bin, 'config.yaml');
 GetOptions(
     '--config=s' => \$config,
-    '--host=s'     => \my $host,
+    '--host=s'   => \my $host,
     '--version'  => \my $version,
 );
 

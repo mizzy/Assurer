@@ -11,7 +11,6 @@ use Test::TAP::Model;
 
 sub new {
     my ( $class, $args ) = @_;
-
     my $self = { context => $args->{context} };
 
     $self->{cmd} = "$FindBin::Bin/assurer_test.pl";
@@ -57,9 +56,10 @@ sub _create_session {
             { _start    => sub {
                   my ($kernel, $heap, $session) = @_[KERNEL, HEAP, SESSION];
 
-                  $heap->{name}   = $plugin->{name};
-                  $heap->{stdout} = [];
-                  $heap->{stderr} = [];
+                  $heap->{context} = $self->{context};
+                  $heap->{name}    = $plugin->{name};
+                  $heap->{stdout}  = [];
+                  $heap->{stderr}  = [];
 
                   $heap->{tap}       = Test::TAP::Model->new;
                   $heap->{test_file} = $heap->{tap}->start_file( $heap->{name} );
@@ -89,7 +89,15 @@ sub _stdout {
 }
 
 sub _stderr {
-    push @{ $_[HEAP]->{stderr} }, $_[ARG0];
+    my $heap = $_[HEAP];
+    my $str = $_[ARG0];
+
+    if ( $str =~ /^Assurer::.+ \[.+\]/ ) {
+        warn "$str\n";
+    }
+    else {
+        $heap->{context}->log( debug => $_[ARG0] );
+    }
 }
 
 sub _close {

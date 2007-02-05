@@ -1,12 +1,14 @@
 global:
   no_diag: 0
+  log:
+    level: debug
 
 test:
   - module: HTTP
     name: HTTP Test
     config:
-      content: It works!
-    role: web
+      content: It not works!
+      role: web
 
 format:
   - module: Text

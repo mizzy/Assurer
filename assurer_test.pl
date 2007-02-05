@@ -26,5 +26,35 @@ my $class = 'Assurer::Plugin::Test::' . $config->{module};
 
 $class->use or die $@;
 my $plugin = $class->new({ %$config, context => $context });
+
+$plugin->register;
 $plugin->pre_run($context);
+
+my $retry    = $plugin->conf->{retry}    || $context->conf->{retry}    || 3;
+my $interval = $plugin->conf->{interval} || $context->conf->{interval} || 3;
+
+my $results;
+for my $test ( @{ $plugin->tests } ) {
+    my $retry_count = 0;
+    for ( 1 .. $retry ) {
+        my $result = $plugin->$test($context);
+        if ( $result =~ /^not ok/ ) {
+            $retry_count++;
+            if ( $retry_count < $retry ) {
+                #$Assurer::Test::count--;
+                $plugin->{test}->decr_count;
+                sleep $interval;
+            }
+            else {
+                $results .= "$result\n";
+            }
+        }
+        else {
+            $results .= "$result\n";
+            last;
+        }
+    }
+}
+
+print $results;
 $plugin->post_run;

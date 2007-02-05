@@ -7,7 +7,12 @@ use LWP::UserAgent;
 use HTTP::Request;
 use Assurer::Test;
 
-sub run {
+sub register {
+    my $self = shift;
+    $self->register_tests( qw/ status content / );
+}
+
+sub status {
     my ( $self, $context, $args ) = @_;
 
     my $conf = $self->conf;
@@ -17,26 +22,31 @@ sub run {
 
     my $port = $conf->{port} || '80';
     my $path = $conf->{path} || '/';
+    my $scheme = $conf->{scheme} || $port eq '80' ? 'http' : 'https';
     $path = "/$path" if $path !~ m!^/!;
-    my $url = "http://$host:$port$path";
+    $self->{url} = $conf->{uri} || "$scheme://$host:$port$path";
+    my $code = $conf->{code} || 200;
 
     my $ua = LWP::UserAgent->new;
     $ua->agent($agent);
 
-    my $req = HTTP::Request->new( GET => $url );
-    my $res = $ua->request($req);
+    my $req = HTTP::Request->new( GET => $self->{url} );
+    $self->{res} = $ua->request($req);
 
-    is_num( $res->code, 200, "HTTP status code of $url is 200" );
+    is( $self->{res}->code, $code, "HTTP status code of $self->{url} is 200" );
+}
 
-    my $content = $conf->{content};
+sub content {
+    my ( $self, $context, $args ) = @_;
+
+    my $content = $self->conf->{content};
     if ( $content ) {
         like(
-            $res->content,
+            $self->{res}->content,
             qr/$content/,
-            "Content of $url matches '$content'",
+            "Content of $self->{url} matches '$content'",
         );
     }
-
 }
 
 1;
