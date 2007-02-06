@@ -14,7 +14,7 @@ sub run {
     for my $line ( split "\n", $format->content ) {
         if ( $format->type eq 'text/plain' ) {
             if ( $line =~ /^ok/ ) {
-                print color 'blue';
+                print color 'green';
             }
             elsif ( $line =~ /^not ok/ ) {
                 print color 'red';
