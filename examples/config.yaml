@@ -2,18 +2,21 @@ global:
   no_diag: 0
   log:
     level: debug
+  retry: 3
+  interval: 3
 
 test:
   - module: HTTP
     name: HTTP Test
     config:
-      content: It not works!
+      retry: 1
+      content: It works!
     role: web
 
 format:
-  - module: Text
-#    config:
-#      css_uri: htmlmatrix.css
+  - module: HTML
+    config:
+      css_uri: htmlmatrix.css
 
 publish:
   - module: Term

@@ -1,0 +1,5 @@
+name: Format::HTML
+author: Gosuke Miyashita
+depends:
+  Test::TAP::HTMLMatrix: 0
+  Test::TAP::Model::Visual: 0

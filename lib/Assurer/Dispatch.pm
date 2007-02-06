@@ -104,11 +104,9 @@ sub _close {
     my $self = shift;
     my $heap = $_[HEAP];
 
-    my %result = $heap->{tap}->analyze_fh($self->{name}, $heap->{stdout});
-    $heap->{test_file}->{results} = \%result;
-    delete $heap->{test_file}->{results}{details};
+    my $result = $heap->{tap}->analyze_fh($self->{name}, $heap->{stdout});
+    $heap->{test_file}->{results} = $result;
     $heap->{tap}->{meat}->{end_time} = time;
-
     $self->{context}->add_result($heap->{tap});
 
     delete $heap->{child};

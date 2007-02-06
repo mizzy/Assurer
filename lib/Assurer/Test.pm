@@ -57,4 +57,8 @@ sub like {
     return "$result $count - $name";
 }
 
+sub DESTROY {
+    print "1..$count\n";
+}
+
 1;

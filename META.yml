@@ -1,0 +1,24 @@
+abstract: "[One line description of module's purpose here]"
+author: Gosuke Miyashita  C<< <gosukenator@gmail.com> >>
+build_requires:
+  YAML: 0
+distribution_type: module
+generated_by: Module::Install version 0.64
+license: perl
+name: Assurer
+no_index:
+  directory:
+    - inc
+    - t
+recommends:
+  Test::TAP::HTMLMatrix: 0
+  Test::TAP::Model::Visual: 0
+requires:
+  Class::Accessor::Fast: 0
+  MIME::Base64: 0
+  POE: 0
+  Test::TAP::Model: 0.08
+  UNIVERSAL::require: 0
+  YAML: 0
+  perl: 5.8.1
+version: 0.01

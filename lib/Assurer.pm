@@ -1,10 +1,11 @@
 package Assurer;
 
+use 5.8.1;
 use warnings;
 use strict;
 use Carp;
 
-use version;our $VERSION = qv('0.0.1');
+our $VERSION = '0.01';
 
 use base qw( Class::Accessor::Fast );
 use Assurer::ConfigLoader;
