@@ -41,7 +41,6 @@ for my $test ( @{ $plugin->tests } ) {
         if ( $result =~ /^not ok/ ) {
             $retry_count++;
             if ( $retry_count < $retry ) {
-                #$Assurer::Test::count--;
                 $plugin->{test}->decr_count;
                 sleep $interval;
             }

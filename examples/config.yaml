@@ -8,7 +8,7 @@ test:
     name: HTTP Test
     config:
       content: It not works!
-      role: web
+    role: web
 
 format:
   - module: Text
