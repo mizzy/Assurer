@@ -74,7 +74,9 @@ sub run {
     });
     $dispatch->run;
 
-    $self->run_hook('format');
+    for my $result ( @{ $self->results } ) {
+        $self->run_hook('format', { result => $result });
+    }
 
     for my $format ( @{ $self->formats || [] } ) {
         $self->run_hook('publish', { format => $format });
@@ -86,6 +88,12 @@ sub run_hook {
     $args ||= {};
 
     for my $plugin ( @{ $self->{hooks}->{$hook} || [] } ) {
+        if ( $hook eq 'format' ) {
+            if ( $plugin->filter ) {
+                $args->{result} = $plugin->filter->dispatch($args);
+            }
+        }
+
         $plugin->pre_run($context, $args);
         $plugin->post_run($context, $args) if $plugin->can('post_run');
     }
@@ -99,7 +107,16 @@ sub load_plugins {
             my $class = "Assurer::Plugin::" . ucfirst $hook . "::$plugin->{module}";
             $class->use or die $@;
             $plugin->{config} ||= {};
-            push @{ $self->{hooks}->{$hook} }, $class->new($plugin);
+
+            my $instance = $class->new($plugin);
+
+            if ( my $filter = $plugin->{filter} ) {
+                my $class = "Assurer::Filter::$filter->{module}";
+                $class->use or die $@;
+                $instance->filter( $class->new($filter) );
+            }
+
+            push @{ $self->{hooks}->{$hook} }, $instance;
         }
     }
 }

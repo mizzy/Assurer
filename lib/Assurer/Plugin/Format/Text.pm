@@ -11,16 +11,9 @@ sub run {
     my $format = Assurer::Format->new;
     $format->type('text/plain');
 
-    my $lines;
-    for my $model ( @{ $context->results } ) {
-        for my $file ( @{ $model->structure->{test_files} } ) {
-            $lines .= "Results of $file->{file}\n";
-            for my $event ( @{ $file->{events} } ) {
-                $lines .= $event->{line} . "\n";
-            }
-        }
-        $lines .= "\n";
-    }
+    my $lines = "Result of $args->{result}->{name}\n";
+    $lines .= join "\n", @{ $args->{result}->text };
+    $lines .= "\n";
     $format->content($lines);
 
     $context->add_format($format);

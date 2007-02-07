@@ -14,9 +14,10 @@ test:
     role: web
 
 format:
-  - module: HTML
-    config:
-      css_uri: htmlmatrix.css
+  - module: Text
+    filter:
+      module: Status
+      status: not ok
 
 publish:
   - module: Term

@@ -3,6 +3,9 @@ package Assurer::Plugin;
 use strict;
 use warnings;
 use UNIVERSAL::require;
+use base qw( Class::Accessor::Fast );
+
+__PACKAGE__->mk_accessors(qw/ filter /);
 
 sub new {
     my ( $class, $args ) = @_;

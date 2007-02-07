@@ -3,11 +3,11 @@ package Assurer::Dispatch;
 use strict;
 use warnings;
 
+use Assurer::Result;
 use YAML;
 use MIME::Base64;
 use FindBin;
 use POE qw( Wheel::Run );
-use Test::TAP::Model;
 
 sub new {
     my ( $class, $args ) = @_;
@@ -61,11 +61,6 @@ sub _create_session {
                   $heap->{stdout}  = [];
                   $heap->{stderr}  = [];
 
-                  $heap->{tap}       = Test::TAP::Model->new;
-                  $heap->{test_file} = $heap->{tap}->start_file( $heap->{name} );
-
-                  $heap->{tap}->{meat}->{start_time} = time;
-
                   $heap->{child} = POE::Wheel::Run->new(
                       Program     => [ $self->{cmd} ],
                       ProgramArgs => [
@@ -103,12 +98,11 @@ sub _stderr {
 sub _close {
     my $self = shift;
     my $heap = $_[HEAP];
-
-    my $result = $heap->{tap}->analyze_fh($self->{name}, $heap->{stdout});
-    $heap->{test_file}->{results} = $result;
-    $heap->{tap}->{meat}->{end_time} = time;
-    $self->{context}->add_result($heap->{tap});
-
+    my $result = Assurer::Result->new({
+        name => $heap->{name},
+        text => $heap->{stdout},
+    });
+    $self->{context}->add_result($result);
     delete $heap->{child};
 }
 

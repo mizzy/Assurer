@@ -27,6 +27,8 @@ sub run {
             print color 'reset';
         }
     }
+
+    print "\n";
 }
 
 1;
