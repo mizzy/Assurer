@@ -21,6 +21,9 @@ format:
 
 publish:
   - module: Term
+    filter:
+      module: Type
+      type: text/plain
     
 hosts:
   web:

@@ -93,6 +93,11 @@ sub run_hook {
                 $args->{result} = $plugin->filter->dispatch($args);
             }
         }
+        elsif ( $hook eq 'publish' ) {
+            if ( $plugin->filter ) {
+                return unless $plugin->filter->dispatch($args);
+            }
+        }
 
         $plugin->pre_run($context, $args);
         $plugin->post_run($context, $args) if $plugin->can('post_run');
