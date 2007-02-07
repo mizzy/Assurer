@@ -12,4 +12,10 @@ sub pre_run {
     $self->run(@_);
 }
 
+sub id {
+   my $self = shift;
+   $self->{id} = shift if @_;
+   #$self->{id} || $self->url || $self->link;
+}
+
 1;

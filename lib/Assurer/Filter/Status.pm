@@ -5,8 +5,7 @@ use warnings;
 use base qw( Assurer::Filter );
 
 sub dispatch {
-    my ( $self, $args ) = @_;
-    my $result = $args->{result};
+    my ( $self, $result ) = @_;
     my @results = grep { $_ =~ /^$self->{status}/ } @{ $result->text };
     $result->text(\@results);
     return $result;

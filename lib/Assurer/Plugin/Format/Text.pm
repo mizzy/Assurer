@@ -11,9 +11,12 @@ sub run {
     my $format = Assurer::Format->new;
     $format->type('text/plain');
 
-    my $lines = "Result of $args->{result}->{name}\n";
-    $lines .= join "\n", @{ $args->{result}->text };
-    $lines .= "\n";
+    my $lines;
+    for my $result ( @{ $args->{results} } ) {
+        $lines .= 'Result of ' . $result->name . "\n";
+        $lines .= join "\n", @{ $result->text };
+        $lines .= "\n\n";
+    }
     $format->content($lines);
 
     $context->add_format($format);

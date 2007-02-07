@@ -74,9 +74,7 @@ sub run {
     });
     $dispatch->run;
 
-    for my $result ( @{ $self->results } ) {
-        $self->run_hook('format', { result => $result });
-    }
+    $self->run_hook('format', { results => $context->results });
 
     for my $format ( @{ $self->formats || [] } ) {
         $self->run_hook('publish', { format => $format });
@@ -90,7 +88,13 @@ sub run_hook {
     for my $plugin ( @{ $self->{hooks}->{$hook} || [] } ) {
         if ( $hook eq 'format' ) {
             if ( $plugin->filter ) {
-                $args->{result} = $plugin->filter->dispatch($args);
+                my @results;
+                for ( @{ $args->{results} } ) {
+                    my $result = $_->clone;
+                    $result = $plugin->filter->dispatch($result);
+                    push @results, $result;
+                }
+                $args->{results} = \@results;
             }
         }
         elsif ( $hook eq 'publish' ) {
