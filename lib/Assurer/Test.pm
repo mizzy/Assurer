@@ -7,7 +7,7 @@ require Exporter;
 use vars qw( @ISA @EXPORT $AUTOLOAD );
 
 @ISA = qw( Exporter );
-@EXPORT = qw( is like );
+@EXPORT = qw( is like ok );
 
 my $count = 0;
 
@@ -47,6 +47,22 @@ sub like {
 
     my $result;
     if ( $got =~ $expected ) {
+        $result = 'ok';
+    }
+    else {
+        $result = 'not ok';
+    }
+
+    $count++;
+    return "$result $count - $name";
+}
+
+sub ok {
+    my ( $got, $name ) = @_;
+    $name ||= '';
+
+    my $result;
+    if ( $got ) {
         $result = 'ok';
     }
     else {

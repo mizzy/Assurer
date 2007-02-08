@@ -6,7 +6,12 @@ use base qw( Assurer::Plugin::Test );
 use Assurer::Test;
 use DBI;
 
-sub run {
+sub register {
+    my $self = shift;
+    $self->register_tests( qw/ connect ping / );
+}
+
+sub connect {
     my ( $self, $context, $args ) = @_;
 
     my $conf = $self->conf;
@@ -18,13 +23,16 @@ sub run {
         return $context->log(error => 'missing dsn');
     };
 
-    my $dbh;
     eval {
-        $dbh = DBI->connect( sprintf( $dsn, $host ),
+        $self->{dbh} = DBI->connect( sprintf( $dsn, $host ),
             $user, $password, { RaiseError => 1, AutoCommit => 1 } );
     };
     ok(! $@, "not error $@");
-    ok($dbh && $dbh->ping, 'ping');
+}
+
+sub ping {
+    my ( $self, $context, $args ) = @_;
+    ok($self->{dbh} && $self->{dbh}->ping, 'ping');
 }
 
 1;
