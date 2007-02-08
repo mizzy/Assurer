@@ -6,7 +6,12 @@ use base qw( Assurer::Plugin::Test );
 use Assurer::Test;
 use Cache::Memcached;
 
-sub run {
+sub register {
+    my $self = shift;
+    $self->register_tests( qw/ get_slab valid_slab / );
+}
+
+sub get_slab {
     my ( $self, $context, $args ) = @_;
 
     my $conf = $self->conf;
@@ -16,10 +21,15 @@ sub run {
 
     my $memd = Cache::Memcached->new( { servers => ["$host:$port"], } );
 
-    my $slabs = $memd->stats('slabs');
-    ok( $slabs, "can get slabs $host" );
-    if ($slabs) {
-        like( $slabs->{hosts}->{"$host:$port"}->{slabs}, qr/STAT/, "valid slab $host");
+    $self->{slabs} = $memd->stats('slabs');
+    ok( $self->{slabs}, "can get slabs $host" );
+}
+
+sub valid_slab {
+    my ( $self, $context, $args ) = @_;
+    my $host = $self->conf->{host} || $context->conf->{host};
+    if ($self->{slabs}) {
+        like( $self->{slabs}->{hosts}->{"$host:$port"}->{slabs}, qr/STAT/, "valid slab $host");
     }
 }
 

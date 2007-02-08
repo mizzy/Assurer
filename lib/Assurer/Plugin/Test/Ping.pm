@@ -6,7 +6,12 @@ use base qw( Assurer::Plugin::Test );
 use Assurer::Test;
 use Net::Ping;
 
-sub run {
+sub register {
+    my $self = shift;
+    $self->register_tests( qw/ ping / );
+}
+
+sub ping {
     my ( $self, $context, $args ) = @_;
 
     my $conf = $self->conf;

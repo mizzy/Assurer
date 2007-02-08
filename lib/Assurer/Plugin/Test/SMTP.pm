@@ -6,7 +6,12 @@ use base qw( Assurer::Plugin::Test );
 use Assurer::Test;
 use Net::SMTP;
 
-sub run {
+sub register {
+    my $self = shift;
+    $self->register_tests( qw/ connect / );
+}
+
+sub connect {
     my ( $self, $context, $args ) = @_;
 
     my $conf = $self->conf;

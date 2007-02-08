@@ -5,18 +5,31 @@ use base qw( Assurer::Plugin::Test );
 use Assurer::Test;
 use Net::FTP;
 
-sub run {
+sub register {
+    my $self = shift;
+    $self->register_tests( qw/ connect login / );
+}
+
+sub connect {
+    my ( $self, $context, $args ) = @_;
+
+    my $conf = $self->conf;
+    my $host = $conf->{host} || $context->conf->{host};
+
+    $self->{ftp} = Net::FTP->new($host);
+    ok($self->{ftp}, "connect to $host");
+}
+
+sub login {
     my ( $self, $context, $args ) = @_;
 
     my $conf = $self->conf;
 
-    my $host     = $conf->{host}     || $context->conf->{host};
+    my $host     = $conf->{host}     || $context->conf->{host};;
     my $user     = $conf->{user}     || 'root';
     my $password = $conf->{password} || '';
 
-    my $ftp = Net::FTP->new($host);
-    ok($ftp, "connect to $host");
-    ok($ftp && $ftp->login($user, $password), "login to $host");
+    ok($self->{ftp} && $self->{ftp}->login($user, $password), "login to $host");
 }
 
 1;
@@ -30,7 +43,6 @@ Assurer::Plugin::Test::FTP - Test for FTP
 
   - module: FTP
     config:
-      dsn:      dbi:mysql:;hostname=%s
       user:     root
       password:
     role: ftp

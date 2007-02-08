@@ -16,7 +16,7 @@ sub connect {
 
     my $conf = $self->conf;
 
-    my $host     = $conf->{host}     || $context->conf->{host};
+    my $host     = $conf->{host} || $context->conf->{host};;
     my $user     = $conf->{user}     || 'root';
     my $password = $conf->{password} || '';
     my $dsn      = $conf->{dsn}      or do {
