@@ -1,4 +1,4 @@
-package Assurer::Filter;
+package Assurer::Plugin::Filter;
 
 use strict;
 use warnings;

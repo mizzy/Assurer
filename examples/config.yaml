@@ -13,11 +13,17 @@ test:
       content: It works!
     role: web
 
+result_filter:
+  - module: Status
+
 format:
   - module: Text
     filter:
       module: Status
       status: not ok
+
+format_filter:
+  - module: Type
 
 publish:
   - module: Term

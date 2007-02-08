@@ -74,7 +74,11 @@ sub run {
     });
     $dispatch->run;
 
+    ### TODO: Insert global result filter process.
+
     $self->run_hook('format', { results => $context->results });
+
+    ### ToDO: Insert global format filter process.
 
     for my $format ( @{ $self->formats || [] } ) {
         $self->run_hook('publish', { format => $format });
@@ -120,7 +124,13 @@ sub load_plugins {
             my $instance = $class->new($plugin);
 
             if ( my $filter = $plugin->{filter} ) {
-                my $class = "Assurer::Filter::$filter->{module}";
+                if ( $hook eq 'format' ) {
+                    $filter->{module} = "Result::$filter->{module}";
+                }
+                else {
+                    $filter->{module} = "Format::$filter->{module}";
+                }
+                my $class = "Assurer::Plugin::Filter::$filter->{module}";
                 $class->use or die $@;
                 $instance->filter( $class->new($filter) );
             }

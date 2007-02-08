@@ -25,7 +25,10 @@ sub tests {
 
 sub pre_run {
     my $self = shift;
-    $self->log( info => qq{Testing $self->{name} ...}, caller => ref $self );
+    $self->log(
+        info   => "Testing $self->{name} on ". $self->conf->{host} . '...',
+        caller => ref $self,
+    );
 }
 
 sub post_run {

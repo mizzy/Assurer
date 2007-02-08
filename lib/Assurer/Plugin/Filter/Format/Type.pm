@@ -1,8 +1,8 @@
-package Assurer::Filter::Type;
+package Assurer::Plugin::Filter::Format::Type;
 
 use strict;
 use warnings;
-use base qw( Assurer::Filter );
+use base qw( Assurer::Plugin::Filter::Format );
 
 sub dispatch {
     my ( $self, $args ) = @_;

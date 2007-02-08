@@ -60,6 +60,7 @@ sub _create_session {
                   $heap->{name}    = $plugin->{name};
                   $heap->{stdout}  = [];
                   $heap->{stderr}  = [];
+                  $heap->{host}    = $plugin->{config}->{host};
 
                   $heap->{child} = POE::Wheel::Run->new(
                       Program     => [ $self->{cmd} ],
@@ -99,8 +100,9 @@ sub _close {
     my $self = shift;
     my $heap = $_[HEAP];
     my $result = Assurer::Result->new({
-        name => $heap->{name},
+        name => $heap->{name} . ' on ' . $heap->{host},
         text => $heap->{stdout},
+        host => $heap->{host},
     });
     $self->{context}->add_result($result);
     delete $heap->{child};
