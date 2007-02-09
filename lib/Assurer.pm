@@ -40,11 +40,11 @@ sub new {
     $self->{config}->{global}->{host} ||= $opts->{host};
     Assurer->set_context($self);
 
+    $self->{config}->{global}->{log} ||= { level => 'debug' };
+
     if ( eval { require Term::Encoding } ) {
         $self->{confing}->{global}->{log}->{encoding} ||= Term::Encoding::get_encoding();
     }
-
-    $self->{config}->{global}->{log} ||= { level => 'debug' };
 
     if ( my $hosts = $self->{config}->{hosts} ) {
         $self->{hosts} = [];
