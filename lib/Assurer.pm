@@ -44,6 +44,8 @@ sub new {
         $self->{confing}->{global}->{log}->{encoding} ||= Term::Encoding::get_encoding();
     }
 
+    $self->{config}->{global}->{log} ||= { level => 'debug' };
+
     if ( my $hosts = $self->{config}->{hosts} ) {
         $self->{hosts} = [];
         if ( ref $hosts eq 'HASH' ) {
