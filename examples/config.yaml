@@ -4,6 +4,7 @@ global:
     level: debug
   retry: 3
   interval: 3
+  exclude_no_result_test: 0
 
 test:
   - module: HTTP

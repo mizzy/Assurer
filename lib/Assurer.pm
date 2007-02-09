@@ -40,7 +40,7 @@ sub new {
     $self->{config}->{global}->{host} ||= $opts->{host};
     Assurer->set_context($self);
 
-    $self->{config}->{global}->{log} ||= { level => 'debug' };
+    $self->conf->{log} ||= { level => 'debug' };
 
     if ( eval { require Term::Encoding } ) {
         $self->{confing}->{global}->{log}->{encoding} ||= Term::Encoding::get_encoding();
@@ -98,6 +98,7 @@ sub run_hook {
                 for ( @{ $args->{results} } ) {
                     my $result = $_->clone;
                     $result = $plugin->filter->dispatch($result);
+                    next if ( !@{ $result->text } and $self->conf->{exclude_no_result_test} );
                     push @results, $result;
                 }
                 $args->{results} = \@results;
@@ -176,8 +177,8 @@ sub results {
 }
 
 sub add_format {
-    my $self = shift;
-    push @{ $self->{formats} }, shift;
+    my ( $self, $format ) = @_;
+    push @{ $self->{formats} }, $format if defined $format->content;
 }
 
 sub formats {
