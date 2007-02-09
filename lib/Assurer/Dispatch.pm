@@ -99,8 +99,10 @@ sub _stderr {
 sub _close {
     my $self = shift;
     my $heap = $_[HEAP];
+    my $name = $heap->{name};
+    $name .=  ' on ' . $heap->{host} if $heap->{host};
     my $result = Assurer::Result->new({
-        name => $heap->{name} . ' on ' . $heap->{host},
+        name => $name,
         text => $heap->{stdout},
         host => $heap->{host},
     });

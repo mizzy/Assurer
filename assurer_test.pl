@@ -38,6 +38,7 @@ for my $test ( @{ $plugin->tests } ) {
     my $retry_count = 0;
     for ( 1 .. $retry ) {
         my $result = $plugin->$test($context);
+        next unless $result;
         if ( $result =~ /^not ok/ ) {
             $retry_count++;
             if ( $retry_count < $retry ) {

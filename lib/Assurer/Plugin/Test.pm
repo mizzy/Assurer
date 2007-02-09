@@ -25,8 +25,10 @@ sub tests {
 
 sub pre_run {
     my $self = shift;
+    my $message = "Testing $self->{name}";
+    $message .= ' on ' . $self->conf->{host} . '...' if $self->conf->{host};
     $self->log(
-        info   => "Testing $self->{name} on ". $self->conf->{host} . '...',
+        info   => $message,
         caller => ref $self,
     );
 }
