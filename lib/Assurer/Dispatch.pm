@@ -8,6 +8,7 @@ use YAML;
 use MIME::Base64;
 use FindBin;
 use POE qw( Wheel::Run );
+use Test::Harness::Straps;
 
 sub new {
     my ( $class, $args ) = @_;
@@ -26,7 +27,7 @@ sub run {
 
     my $hosts = $context->hosts;
     for my $plugin ( @{ $context->{config}->{test} } ) {
-        if ( @$hosts and !defined $plugin->{config}->{host} ) {
+        if ( @$hosts and !defined $plugin->{config}->{host} and !defined $plugin->{config}->{uri} ) {
             for my $host ( @$hosts ) {
                 next if ( $plugin->{role} and ( !defined $host->{role} or $host->{role} ne $plugin->{role} ) );
                 $plugin->{config}->{host} = $host->{host};
@@ -101,11 +102,13 @@ sub _close {
     my $heap = $_[HEAP];
     my $name = $heap->{name};
     $name .=  ' on ' . $heap->{host} if $heap->{host};
+
     my $result = Assurer::Result->new({
-        name => $name,
-        text => $heap->{stdout},
-        host => $heap->{host},
+        name  => $name,
+        host  => $heap->{host},
+        strap => Test::Harness::Straps->new->analyze($name, $heap->{stdout}),
     });
+
     $self->{context}->add_result($result);
     delete $heap->{child};
 }

@@ -14,7 +14,13 @@ sub run {
     my $lines;
     for my $result ( @{ $args->{results} } ) {
         $lines .= 'Result of ' . $result->name . "\n";
-        $lines .= join "\n", @{ $result->text };
+        my $cnt = 1;
+        for my $detail ( @{ $result->strap->details } ) {
+            $lines .= $detail->{ok} ? "ok $cnt - " : "not ok $cnt - ";
+            $lines .= $detail->{name};
+            $lines .= "\n";
+            $cnt++;
+        }
         $lines .= "\n\n";
     }
     $format->content($lines);

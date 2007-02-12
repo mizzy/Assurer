@@ -12,6 +12,7 @@ use Assurer::ConfigLoader;
 use Assurer::Dispatch;
 use UNIVERSAL::require;
 use Encode;
+use Assurer::Shell;
 
 __PACKAGE__->mk_accessors( qw/ test / );
 
@@ -26,8 +27,15 @@ sub bootstrap {
     my ( $class, $opts ) = @_;
 
     my $self = $class->new($opts);
-    $self->run;
-    $self;
+
+    if ( $opts->{shell} ) {
+        $self->shell($opts);
+    }
+    else {
+        $self->run;
+    }
+
+    return $self;
 }
 
 sub new {
@@ -65,6 +73,26 @@ sub new {
     return $self;
 }
 
+sub shell {
+    my ( $self, $opts ) = @_;
+
+    my @hosts;
+    for my $host ( @{ $self->{hosts} } ) {
+        if ( my $role = $opts->{role} ) {
+            push @hosts, $host->{host} if $host->{role} eq $role;
+        }
+        else {
+            push @hosts, $host->{host};
+        }
+    }
+
+    my $shell = Assurer::Shell->new({
+        hosts => \@hosts,
+        para  => $opts->{para} || 1,
+    });
+    $shell->cmdloop;
+}
+
 sub run {
     my ( $self, $args ) = @_;
     $args ||= {};
@@ -98,7 +126,7 @@ sub run_hook {
                 for ( @{ $args->{results} } ) {
                     my $result = $_->clone;
                     $result = $plugin->filter->dispatch($result);
-                    next if ( !@{ $result->text } and $self->conf->{exclude_no_result_test} );
+                    next if ( !@{ $result->strap->details } and $self->conf->{exclude_no_result_test} );
                     push @results, $result;
                 }
                 $args->{results} = \@results;

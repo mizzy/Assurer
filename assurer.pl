@@ -15,6 +15,9 @@ GetOptions(
     '--config=s' => \$config,
     '--host=s'   => \my $host,
     '--version'  => \my $version,
+    '--shell'    => \my $shell,
+    '--role=s'   => \my $role,
+    '--para=s'   => \my $para,
 );
 
 Getopt::Long::Configure('bundling');
@@ -27,6 +30,9 @@ if ($version) {
 Assurer->bootstrap({
     config => $config,
     host   => $host,
+    shell  => $shell,
+    role   => $role,
+    para   => $para,
 });
 
 exit;

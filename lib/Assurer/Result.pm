@@ -4,7 +4,7 @@ use strict;
 use warnings;
 use Storable;
 use base qw( Class::Accessor::Fast );
-__PACKAGE__->mk_accessors(qw/ text name host /);
+__PACKAGE__->mk_accessors(qw/ name host strap /);
 
 sub clone {
     my $self = shift;
