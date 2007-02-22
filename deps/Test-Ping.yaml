@@ -1,0 +1,4 @@
+name: Test::Ping
+author: Tokuhiro Matsuno
+depends:
+  Net::Ping: 0

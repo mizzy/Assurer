@@ -1,0 +1,4 @@
+name: Publish::Term
+author: Gosuke Miyashita
+depends:
+  Term::ANSIColor: 0

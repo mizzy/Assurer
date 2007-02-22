@@ -1,0 +1,4 @@
+name: Test::DBI
+author: Tokuhiro Matsuno
+depends: 
+  DBI: 0

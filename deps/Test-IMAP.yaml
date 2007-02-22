@@ -1,0 +1,4 @@
+name: Test::SSH
+author: Franck Cuny
+depends:
+  Net::IMAP::Simple: 0

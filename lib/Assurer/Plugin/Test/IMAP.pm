@@ -6,25 +6,24 @@ use base qw( Assurer::Plugin::Test );
 use Net::IMAP::Simple;
 use Assurer::Test;
 
-use Data::Dumper;
-
 sub register {
     my $self = shift;
-		$self->register_tests( qw/ connect / );
+    $self->register_tests(qw/ connect /);
 }
 
 sub connect {
-	my ($self, $context, $args) = @_;
+    my ( $self, $context, $args ) = @_;
 
-  my $conf = $self->conf;
+    my $conf = $self->conf;
 
-  my $host    = $conf->{host}     || $context->conf->{host};
-	my $timeout = $conf->{timeout}  || 90;
-	my $port		= $conf->{port}			|| 143;
+    my $host    = $conf->{host}    || $context->conf->{host};
+    my $port    = $conf->{port}    || 143;
+    my $timeout = $conf->{timeout} || 90;
 
-	my $imap = Net::IMAP::Simple->new($host, [port => $port, timeout => $timeout]);
-	
-	ok($imap, "smtp ok $host");
+    my $imap = Net::IMAP::Simple->new( $host,
+        [ port => $port, timeout => $timeout ] );
+
+    ok( $imap, "smtp ok $host" );
 }
 
 1;
@@ -37,10 +36,9 @@ Assurer::Plugin::Test::IMAP - Test for IMAP
 =head1 SYNOPSIS
 
   - module: IMAP
-		name: IMAP Test
+	name: IMAP Test
     config:
       timeout: 5
-			port: 143
     role: imap
 	
 =head1 DESCRIPTION

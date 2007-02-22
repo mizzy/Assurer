@@ -6,30 +6,29 @@ use base qw( Assurer::Plugin::Test );
 use Net::Scan::SSH::Server::Version;
 use Assurer::Test;
 
-use Data::Dumper;
-
 sub register {
     my $self = shift;
-		$self->register_tests( qw/ connect / );
+    $self->register_tests(qw/ connect /);
 }
 
 sub connect {
-	my ($self, $context, $args) = @_;
+    my ( $self, $context, $args ) = @_;
 
-  my $conf = $self->conf;
+    my $conf = $self->conf;
 
-  my $host    = $conf->{host}     || $context->conf->{host};
-	my $timeout = $conf->{timeout}  || 8;
-	my $port		= $conf->{port}			|| 22;
+    my $host    = $conf->{host}    || $context->conf->{host};
+    my $port    = $conf->{port}    || 22;
+    my $timeout = $conf->{timeout} || 8;
 
-	my $ssh = Net::Scan::SSH::Server::Version->new({
-	    host    => $host,
-	    timeout => $timeout,
-			port    => $port,
-	});
-	
-	my $results = $ssh->scan;
-	like( $results, qr/SSH-.*/, "SSH Connection is up" );
+    my $ssh = Net::Scan::SSH::Server::Version->new(
+        {   host    => $host,
+            timeout => $timeout,
+            port    => $port,
+        }
+    );
+
+    my $results = $ssh->scan;
+    like( $results, qr/SSH-.*/, "SSH Connection is up" );
 }
 
 1;
@@ -42,10 +41,9 @@ Assurer::Plugin::Test::SSH - Test for SSH
 =head1 SYNOPSIS
 
   - module: SSH
-		name: SSH Test
+	name: SSH Test
     config:
       timeout: 5
-			port: 22
     role: ssh
 	
 =head1 DESCRIPTION

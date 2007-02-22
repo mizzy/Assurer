@@ -1,0 +1,4 @@
+name: Test::FTP
+author: Tokuhiro Matsuno
+depends: 
+  Net::SMTP: 0

@@ -1,0 +1,4 @@
+name: Test::Memcached
+author: Tokuhiro Matsuno
+depends:
+  Cache::Memcached: 0

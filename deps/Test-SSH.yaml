@@ -1,0 +1,4 @@
+name: Test::SSH
+author: Franck Cuny
+depends:
+  Net::Scan::SSH::Server::Version: 0
