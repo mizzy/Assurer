@@ -73,8 +73,8 @@ sub ok {
     return "$result $count - $name";
 }
 
-#sub DESTROY {
-#    print "1..$count\n";
-#}
+sub DESTROY {
+    print "1..$count\n";
+}
 
 1;
