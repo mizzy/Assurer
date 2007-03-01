@@ -37,9 +37,4 @@ sub post_run {
     my ( $self, $context, $args ) = @_;
 }
 
-sub conf {
-    my $self = shift;
-    return $self->{config};
-}
-
 1;

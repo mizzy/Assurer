@@ -32,4 +32,9 @@ sub log {
     $self->{context}->log(@_);
 }
 
+sub conf {
+    my $self = shift;
+    return $self->{config};
+}
+
 1;
