@@ -103,6 +103,8 @@ mapping:
             required: true
           "config":
             type: any
+          "filter":
+            type: any
 
   "hosts":
     name: list of hosts
