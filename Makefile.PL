@@ -12,6 +12,7 @@ requires 'MIME::Base64';
 requires 'POE';
 requires 'Term::Shell';
 requires 'Parallel::ForkManager';
+requires 'Kwalify';
 
 build_requires('YAML');
 

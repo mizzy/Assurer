@@ -1,0 +1,110 @@
+type: map
+mapping:
+  global:
+    name: global
+    desc: assurer's global configuration = $self->{conf}
+    type: map
+    required: true
+    mapping:
+      "no_diag":
+        name: no_diag
+        desc: "??"
+        type: int
+      "retry":
+        name: retry
+        desc: "retry ?"
+        type: int
+      "interval":
+        name: interval
+        desc: "interval ??"
+        type: int
+      "exclude_no_result_test":
+        name: exclude_no_result_test
+        desc: "??"
+        type: int
+      "log":
+        name: log
+        desc: log
+        type: map
+        mapping:
+          "level":
+            name: log-level
+            desc: log-level
+            type: str
+            enum:
+              - debug
+              - warn
+              - info
+              - error
+  test:
+    name: test
+    desc: list of tests
+    type: seq
+    required: true
+    sequence:
+      - type: map
+        mapping:
+          "module":
+            type: str
+            required: true
+          "name":
+            type: str
+            required: true
+          "config":
+            type: any
+          "role":
+            type: str    
+
+  "result_filter":
+    name: result filter
+    desc: result filter
+    type: seq
+    sequence:
+      - type: map
+        mapping:
+          "module":
+            type: str
+            required: true
+
+  "format":
+    name: format
+    desc: format
+    required: true
+    type: seq
+    sequence:
+      - type: map
+        mapping:
+          "module":
+            type: str
+            required: true
+          "config":
+            type: any
+
+  "format_filter":
+    name: format
+    desc: format
+    type: seq
+    sequence:
+      - type: any
+        mapping:
+          "module":
+            type: str
+            required: true
+
+  "publish":
+    name: list of plugin
+    desc: list of plugin
+    type: seq
+    sequence:
+      - type: map
+        mapping:
+          "module":
+            type: str
+            required: true
+          "config":
+            type: any
+
+  "hosts":
+    name: list of hosts
+    desc: list of hosts
+    type: any
