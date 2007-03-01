@@ -22,17 +22,15 @@ sub load {
     if (   ( !ref($stuff) && $stuff eq '-' )
         || ( -e $stuff && -r _ ) )
     {
-        my $res = validate( YAML::LoadFile($schema_file),
-            YAML::LoadFile($stuff) );
+        $config = YAML::LoadFile($stuff);
+        my $res = validate( YAML::LoadFile($schema_file), $config );
         $context->log( error => $res ) unless $res == 1;
         $context->{config_path} = $stuff if $context;
-        $config = YAML::LoadFile($stuff);
     }
     elsif ( ref($stuff) && ref($stuff) eq 'SCALAR' ) {
-        my $res
-            = validate( YAML::LoadFile($schema_file), YAML::Load($stuff) );
-        $context->log( error => $res ) unless $res == 1;
         $config = YAML::Load( ${$stuff} );
+        my $res = validate( YAML::LoadFile($schema_file), $config );
+        $context->log( error => $res ) unless $res == 1;
     }
     elsif ( ref($stuff) && ref($stuff) eq 'HASH' ) {
         $config = Storable::dclone($stuff);
