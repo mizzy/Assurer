@@ -108,6 +108,8 @@ sub run {
 
     $self->run_hook('format', { results => $context->results });
 
+    $self->run_hook('notify', { results => $context->results });
+
     ### ToDO: Insert global format filter process.
 
     for my $format ( @{ $self->formats || [] } ) {
@@ -120,7 +122,7 @@ sub run_hook {
     $args ||= {};
 
     for my $plugin ( @{ $self->{hooks}->{$hook} || [] } ) {
-        if ( $hook eq 'format' ) {
+        if ( $hook eq 'format' or $hook eq 'notify' ) {
             if ( $plugin->filter ) {
                 my @results;
                 for ( @{ $args->{results} } ) {
@@ -146,7 +148,7 @@ sub run_hook {
 sub load_plugins {
     my $self = shift;
 
-    for my $hook ( qw/format publish/ ) {
+    for my $hook ( qw/format notify publish/ ) {
         for my $plugin ( @{ $self->{config}->{$hook} || [] } ) {
             my $class = "Assurer::Plugin::" . ucfirst $hook . "::$plugin->{module}";
             $class->use or die $@;
@@ -155,7 +157,7 @@ sub load_plugins {
             my $instance = $class->new($plugin);
 
             if ( my $filter = $plugin->{filter} ) {
-                if ( $hook eq 'format' ) {
+                if ( $hook eq 'format' or $hook eq 'notify' ) {
                     $filter->{module} = "Result::$filter->{module}";
                 }
                 else {

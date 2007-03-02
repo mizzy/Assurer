@@ -1,0 +1,4 @@
+name: Notify::IRC
+author: Gosuke Miyashita
+depends:
+  POE::Component::IKC::ClientLite: 0

@@ -69,7 +69,6 @@ mapping:
   "format":
     name: format
     desc: format
-    required: true
     type: seq
     sequence:
       - type: map
@@ -78,6 +77,23 @@ mapping:
             type: str
             required: true
           "config":
+            type: any
+          "filter":
+            type: any
+
+  "notify":
+    name: notify
+    desc: notify
+    type: seq
+    sequence:
+      - type: map
+        mapping:
+          "module":
+            type: str
+            required: true
+          "config":
+            type: any
+          "filter":
             type: any
 
   "format_filter":
