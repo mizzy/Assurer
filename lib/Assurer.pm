@@ -79,18 +79,22 @@ sub shell {
     my @hosts;
     for my $host ( @{ $self->{hosts} } ) {
         if ( my $role = $opts->{role} ) {
-            push @hosts, $host->{host} if $host->{role} eq $role;
+            push @hosts, $host if $host->{role} eq $role;
         }
         else {
-            push @hosts, $host->{host};
+            push @hosts, $host;
         }
     }
 
-    my $shell = Assurer::Shell->new({
-        hosts => \@hosts,
-        para  => $opts->{para} || 1,
-    });
-    $shell->cmdloop;
+    my $shell = Assurer::Shell->new(
+        {   context => $self,
+            config  => $self->{config},
+            hosts   => \@hosts,
+            para    => $opts->{para} || 5,
+        }
+    );
+
+    $shell->run_loop;
 }
 
 sub run {

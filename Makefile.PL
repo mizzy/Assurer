@@ -13,6 +13,8 @@ requires 'POE';
 requires 'Term::Shell';
 requires 'Parallel::ForkManager';
 requires 'Kwalify';
+requires 'Net::SSH';
+requires 'Term::ReadLine';
 
 build_requires('YAML');
 
