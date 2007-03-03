@@ -37,8 +37,8 @@ Assurer::Plugin::Publish::Mail - Send result by mail
   - module: Mail
     config:
       subject: Test results from Assurer
-      to: miya@mizzy.org
-      from: root@mizzy.org
+      to: someone@example.com, another@example.com
+      from: root@example.com
 
 =head1 DESCRIPTION
 
