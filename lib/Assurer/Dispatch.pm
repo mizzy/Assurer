@@ -172,7 +172,7 @@ sub _get_host_exec_on {
     my $hosts = $self->{context}->{config}->{exec_on};
     if ( $hosts ) {
         my $host = $hosts->[$cnt++]->{host};
-        $cnt = 0 if $cnt > @$hosts;
+        $cnt = 0 if $cnt > $#{$hosts};
         return $host;
     }
     else {
