@@ -36,6 +36,11 @@ mapping:
               - warn
               - info
               - error
+      "para":
+        name: para
+        desc: number of test proccesses to fork at once
+        type: int
+
   test:
     name: test
     desc: list of tests
@@ -126,3 +131,16 @@ mapping:
     name: list of hosts
     desc: list of hosts
     type: any
+
+  "exec_on":
+    name: exec_on
+    desc: list of hosts where tests executed on
+    type: seq
+    sequence:
+      - type: map
+        mapping:
+          "host":
+            type: str
+            required: true
+          "priority":
+            type: int

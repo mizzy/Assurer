@@ -7,12 +7,17 @@ use Assurer::Result;
 use YAML;
 use MIME::Base64;
 use FindBin;
-use POE qw( Wheel::Run );
+use POE qw( Wheel::Run Component::JobQueue );
 use Test::Harness::Straps;
+use Storable;
+
+my @jobs;
 
 sub new {
     my ( $class, $args ) = @_;
-    my $self = { context => $args->{context} };
+    my $self = {
+        context => $args->{context},
+    };
 
     $self->{cmd} = "$FindBin::Bin/assurer_test.pl";
 
@@ -30,27 +35,79 @@ sub run {
         if ( @$hosts and !defined $plugin->{config}->{host} and !defined $plugin->{config}->{uri} ) {
             for my $host ( @$hosts ) {
                 next if ( $plugin->{role} and ( !defined $host->{role} or $host->{role} ne $plugin->{role} ) );
-                $plugin->{config}->{host} = $host->{host};
-                $self->_create_session($plugin);
+                my $clone = Storable::dclone($plugin);
+                $clone->{config}->{host} = $host->{host};
+                push @jobs, $clone;
             }
         }
         else {
-            $self->_create_session($plugin);
+            push @jobs, $plugin;
         }
     }
 
+    POE::Component::JobQueue->spawn(
+        Alias       => 'passive',
+        WorkerLimit => $context->conf->{para} || 8,
+        Worker      => sub { $self->_create_session },
+        Passive => { },
+    );
+
+    POE::Session->create(
+        inline_states => {
+            _start      => sub {
+                my $kernel = $_[KERNEL];
+                $kernel->yield( 'flood_queue' );
+            },
+            flood_queue => sub {
+                my $kernel = $_[KERNEL];
+                foreach ( 0 .. $#jobs ) {
+                    $kernel->post( passive => enqueue => response => $_ );
+                }
+                $kernel->yield( 'dummy' );
+            },
+            #response    => \&passive_respondee_response,
+            # quiets ASSERT_DEFAULT
+            _stop       => sub {},
+            dummy       => sub {},
+        },
+    );
     $poe_kernel->sig( CHLD => '' );
     $poe_kernel->run;
 }
 
 sub _create_session {
-    my ( $self, $plugin ) = @_;
+    my $self = shift;
+
+    my $plugin = pop @jobs;
 
     my $encoded_conf = MIME::Base64::encode( Dump($plugin) );
     $encoded_conf =~ s/\n//g;
 
     my $encoded_context = MIME::Base64::encode( Dump($self->{context}) );
     $encoded_context =~ s/\n//g;
+
+    my $host = $self->_get_host_exec_on;
+    my %program;
+    if ( $host ne 'localhost' ) {
+        %program = (
+            Program     => [ 'ssh' ],
+            ProgramArgs => [
+                $host,
+                $self->{cmd},
+                "--config=$encoded_conf",
+                "--context=$encoded_context",
+            ],
+        );
+    }
+    else {
+        %program = (
+            Program     => [ $self->{cmd} ],
+            ProgramArgs => [
+                "--config=$encoded_conf",
+                "--context=$encoded_context",
+            ],
+        );
+    }
 
     POE::Session->create(
         inline_states =>
@@ -62,13 +119,8 @@ sub _create_session {
                   $heap->{stdout}  = [];
                   $heap->{stderr}  = [];
                   $heap->{host}    = $plugin->{config}->{host};
-
                   $heap->{child} = POE::Wheel::Run->new(
-                      Program     => [ $self->{cmd} ],
-                      ProgramArgs => [
-                          "--config=$encoded_conf",
-                          "--context=$encoded_context",
-                      ],
+                      %program,
                       StdoutEvent => "stdout",
                       StderrEvent => "stderr",
                       CloseEvent  => "close",
@@ -111,6 +163,22 @@ sub _close {
 
     $self->{context}->add_result($result);
     delete $heap->{child};
+}
+
+my $cnt = 0;
+sub _get_host_exec_on {
+    my $self = shift;
+
+    my $hosts = $self->{context}->{config}->{exec_on};
+    if ( $hosts ) {
+        my $host = $hosts->[$cnt++]->{host};
+        $cnt = 0 if $cnt > @$hosts;
+        return $host;
+    }
+    else {
+        return 'localhost';
+    }
+
 }
 
 1;

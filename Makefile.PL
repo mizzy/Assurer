@@ -15,6 +15,7 @@ requires 'Parallel::ForkManager';
 requires 'Kwalify';
 requires 'Net::SSH';
 requires 'Term::ReadLine';
+requires 'POE::Component::JobQueue';
 
 build_requires('YAML');
 
