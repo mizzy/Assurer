@@ -58,6 +58,8 @@ mapping:
             type: any
           "role":
             type: str    
+          disable:
+            type: int
 
   "result_filter":
     name: result filter
@@ -84,6 +86,8 @@ mapping:
             type: any
           "filter":
             type: any
+          disable:
+            type: int
 
   "notify":
     name: notify
@@ -99,6 +103,8 @@ mapping:
             type: any
           "filter":
             type: any
+          disable:
+            type: int
 
   "format_filter":
     name: format
@@ -125,6 +131,8 @@ mapping:
             type: any
           "filter":
             type: any
+          disable:
+            type: int
 
   "hosts":
     name: list of hosts

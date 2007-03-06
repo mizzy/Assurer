@@ -37,11 +37,11 @@ sub run {
                 next if ( $plugin->{role} and ( !defined $host->{role} or $host->{role} ne $plugin->{role} ) );
                 my $clone = Storable::dclone($plugin);
                 $clone->{config}->{host} = $host->{host};
-                push @jobs, $clone;
+                push @jobs, $clone unless $clone->{disable};
             }
         }
         else {
-            push @jobs, $plugin;
+            push @jobs, $plugin unless $plugin->{disable};
         }
     }
 

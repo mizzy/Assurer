@@ -155,6 +155,7 @@ sub load_plugins {
     for my $hook ( qw/format notify publish/ ) {
         for my $plugin ( @{ $self->{config}->{$hook} || [] } ) {
             my $class = "Assurer::Plugin::" . ucfirst $hook . "::$plugin->{module}";
+            next if $plugin->{disable};
             $class->use or die $@;
             $plugin->{config} ||= {};
 
