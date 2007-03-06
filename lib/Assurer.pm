@@ -44,7 +44,7 @@ sub new {
     my $self = bless { %$opts }, $class;
 
     my $config_loader = Assurer::ConfigLoader->new;
-    $self->{config} = $config_loader->load($opts->{config});
+    $self->{config} = $config_loader->load($opts->{config}, $self);
     $self->{config}->{global}->{host} ||= $opts->{host};
     Assurer->set_context($self);
 
@@ -237,6 +237,13 @@ my %levels = (
 sub should_log {
     my($self, $level) = @_;
     $levels{$level} >= $levels{$self->conf->{log}->{level}};
+}
+
+sub error {
+    my( $self, $msg ) = @_;
+    my( $caller, $filename, $line ) = caller(0);
+    chomp $msg;
+    die "$caller [fatal] $msg at line $line\n";
 }
 
 1; # Magic true value required at end of module

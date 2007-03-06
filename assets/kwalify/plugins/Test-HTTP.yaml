@@ -1,0 +1,16 @@
+type: map
+mapping:
+  host:
+    type: str
+  agent:
+    type: str
+  port:
+    type: int
+  path:
+    type: str
+  scheme:
+    type: str
+  code:
+    type: int
+  content:
+    type: str

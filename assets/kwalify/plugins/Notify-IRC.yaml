@@ -1,0 +1,20 @@
+type: map
+mapping:
+  daemon_host:
+    type: str
+  daemon_port:
+    type: int
+  server_host:
+    type: str
+  server_port:
+    type: int
+  server_channels:
+    type: seq
+    sequence:
+      - type: str
+  charset:
+    type: str
+  announce:
+    type: str
+  nickname:
+    type: str

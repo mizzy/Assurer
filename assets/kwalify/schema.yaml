@@ -54,7 +54,6 @@ mapping:
             required: true
           "name":
             type: str
-            required: true
           "config":
             type: any
           "role":

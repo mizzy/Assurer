@@ -1,0 +1,6 @@
+type: map
+mapping:
+  host:
+    type: str
+  port:
+    type: str
