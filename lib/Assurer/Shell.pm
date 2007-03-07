@@ -150,6 +150,8 @@ sub process_test {
 
     my @plugins = grep { $_->{module} eq $test } @{ $self->{config}->{test} };
 
+    return print "[WARNING] no such test plugin config: $test\n" unless @plugins;
+
     my @jobs;
     if ( !$action ) {
         for ( @plugins ) {
