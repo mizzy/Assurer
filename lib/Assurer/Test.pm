@@ -74,7 +74,7 @@ sub ok {
 }
 
 sub DESTROY {
-    print "1..$count\n";
+    #print "1..$count\n";
 }
 
 1;

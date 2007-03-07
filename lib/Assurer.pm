@@ -86,13 +86,12 @@ sub shell {
         }
     }
 
-    my $shell = Assurer::Shell->new(
-        {   context => $self,
-            config  => $self->{config},
-            hosts   => \@hosts,
-            para    => $opts->{para} || 5,
-        }
-    );
+    my $shell = Assurer::Shell->new({
+        context => $self,
+        config  => $self->{config},
+        hosts   => \@hosts,
+        para    => $opts->{para} || 5,
+    });
 
     $shell->run_loop;
 }
