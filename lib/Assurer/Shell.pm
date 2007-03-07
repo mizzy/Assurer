@@ -282,6 +282,9 @@ sub callback {
 
 sub help {
     my ( $self ) = @_;
+
+    my $available_test = join ' ', map { $_->{module} } @{$self->{context}->{config}->{test}};
+
     my $help = <<HELP;
  To quit, just type quit, exit, or press ctrl-D.
  This shell is still experimental.
@@ -294,14 +297,23 @@ assurer> ping
  Note that if you specify more than one host name, they must be 
  space-delimited.
 
-assurer> on app1.foo.com app2.foo.com do ping
+assurer> !on app1.foo.com app2.foo.com do ping
 
  To execute a command on all servers matching a set of roles:
 
-assurer> with web db do ping
+assurer> !with web db do ping
+
+ You can execute tests to, like this:
+
+assurer> !test SSH on app1.foo.com
+assurer> !test SSH with web
+
+ Available tests are : $available_test
 
 HELP
-    print $help;
+
+	print $help;
+
 }
 
 1;
