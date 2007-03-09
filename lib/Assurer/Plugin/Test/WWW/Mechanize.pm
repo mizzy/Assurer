@@ -56,3 +56,26 @@ sub load_plugin_perl {
 }
 
 1;
+
+__END__
+
+=head1 NAME
+
+Assurer::Plugin::Test::WWW::Mechanize - Test using Test::WWW::Mechanize
+
+=head1 SYNOPSIS
+
+  - module: WWW::Mechanize
+    role: web
+
+=head1 DESCRIPTION
+
+This plugin executes tests using Test::WWW::Mechanize.
+
+For this plugin, you should create .pl file.
+Please see assets/plugins/Test-WWW-Mechanize/example.pl.
+
+=head1 AUTHOR
+
+Gosuke Miyashita
+
