@@ -16,6 +16,7 @@ requires 'Kwalify';
 requires 'Net::SSH';
 requires 'Term::ReadLine';
 requires 'POE::Component::JobQueue';
+requires 'Test::WWW::Mechanize';
 
 build_requires('YAML');
 

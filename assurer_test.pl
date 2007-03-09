@@ -33,6 +33,7 @@ $plugin->pre_run($context);
 my $retry    = $plugin->conf->{retry}    || $context->conf->{retry}    || 3;
 my $interval = $plugin->conf->{interval} || $context->conf->{interval} || 3;
 
+$retry = 1 if ref $plugin eq 'Assurer::Plugin::Test::WWW::Mechanize';
 my $results;
 for my $test ( @{ $plugin->tests } ) {
     my $retry_count = 0;
@@ -56,5 +57,5 @@ for my $test ( @{ $plugin->tests } ) {
     }
 }
 
-print $results;
+print $results if $results;
 $plugin->post_run;
