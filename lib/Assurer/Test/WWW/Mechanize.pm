@@ -2,8 +2,9 @@ package Assurer::Test::WWW::Mechanize;
 
 use strict;
 use warnings;
-use Test::WWW::Mechanize;
 use Test::Builder;
+
+use base qw( Test::WWW::Mechanize );
 
 sub new {
     my $class = shift;
@@ -16,10 +17,6 @@ sub new {
     $test->no_plan;
 
     bless $self, $class;
-}
-
-sub get_ok {
-    shift->{mech}->get_ok(@_);
 }
 
 1;
