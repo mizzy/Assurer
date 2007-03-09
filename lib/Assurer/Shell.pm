@@ -82,19 +82,20 @@ sub catch_run {
 }
 
 sub process_host {
-    my ( $self, $input, $hosts ) = @_;
+    my ( $self, $input ) = @_;
 
-    my $cmd;
-    if ( $hosts ) {
-        $cmd = $input;
-    }
-    else {
-        ( $hosts, $cmd ) = ( $input =~ m/^!on\s+(.+)\s+do\s+(.+)$/ );
-    }
+    my ( $hosts, $cmd ) = ( $input =~ m/^!on\s+(.+)\s+do\s+(.+)$/ );
 
     return print "[WARNING] error in your syntax, see help\n" unless ( $hosts and $cmd );
 
-    my @hosts = split /\s/, $hosts;
+    my @hosts;
+    if ( $hosts =~ m!/(.*)/! ) {
+        push @hosts, grep { $_ =~ /$1/ } map { $_->{host} } @{ $self->{hosts} };
+    }
+    else {
+        @hosts = split /\s/, $hosts;
+    }
+
     if ( @hosts ) {
         $self->process_command( $cmd, \@hosts );
     }
@@ -107,9 +108,16 @@ sub process_role {
 
     return print "[WARNING] error in your syntax, see help\n" unless ( $roles and $cmd );
 
-    my @roles      = split /\s/, $roles;
-    my @hosts      = ();
-    my @inexistant = ();
+    my @roles;
+    if ( $roles =~ m!/(.*)/! ) {
+        push @roles, grep { $_ =~ /$1/ } keys %{ Assurer->context->{config}->{hosts} };
+    }
+    else {
+        @roles = split /\s/, $roles;
+    }
+
+    my @hosts;
+    my @inexistant;
     foreach my $role ( @roles ) {
         if ( !grep { $_->{ role } eq $role } @{ $self->{ hosts } } ) {
             push( @inexistant, $role );
@@ -160,7 +168,14 @@ sub process_test {
     }
 
     if ( $action and $action eq 'on' ) {
-        my @hosts = split /\s/, $args;
+        my @hosts;
+        if ( $args =~ m!/(.*)/! ) {
+            push @hosts, grep { $_ =~ /$1/ } map { $_->{host} } @{ $self->{hosts} };
+        }
+        else {
+            @hosts = split /\s/, $args;
+        }
+
         for my $host ( @hosts ) {
             for my $plugin ( @plugins ) {
                 my $clone = Storable::dclone($plugin);
@@ -171,7 +186,14 @@ sub process_test {
     }
 
     if ( $action and $action eq 'with' ) {
-        my @roles = split /\s/, $args;
+        my @roles;
+        if ( $args =~ m!/(.*)/! ) {
+            push @roles, grep { $_ =~ /$1/ } keys %{ Assurer->context->{config}->{hosts} };
+        }
+        else {
+            @roles = split /\s/, $args;
+        }
+
         for my $role ( @roles ) {
             my $hosts = $self->{config}->{hosts}->{$role};
             print "[WARNING] no such role: $role\n" unless $hosts;
@@ -193,7 +215,6 @@ sub run_test {
     my $context = $self->{context};
     for my $job ( @jobs ) {
         my $class = 'Assurer::Plugin::Test::' . $job->{module};
-
         $class->use or die $@;
         my $plugin = $class->new({ %$job, context => $self->{context} });
 
@@ -270,8 +291,9 @@ sub publish_shell {
 
 sub callback {
     my ( $self, $server, $cmd ) = @_;
-
+    $server = join '@', $self->{user}, $server if defined $self->{user};
     Net::SSH::sshopen2( $server, *READER, *WRITER, $cmd );
+    $server =~ s/.*@//;
     while ( <READER> ) {
         chomp;
         print "[$server] $_\n";
@@ -298,15 +320,19 @@ assurer> ping
  space-delimited.
 
 assurer> !on app1.foo.com app2.foo.com do ping
+assurer> !on /.*\.foo.com/ do ping
 
  To execute a command on all servers matching a set of roles:
 
 assurer> !with web db do ping
+assurer> !with /web|mail/ do ping
 
  You can execute tests to, like this:
 
 assurer> !test SSH on app1.foo.com
+assurer> !test SSH on /.*\.foo.com/
 assurer> !test SSH with web
+assurer> !test SSH with /web|mail/
 
  Available tests are : $available_test
 

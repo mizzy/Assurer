@@ -90,6 +90,7 @@ sub shell {
         context => $self,
         config  => $self->{config},
         hosts   => \@hosts,
+        user    => $opts->{user},
         para    => $opts->{para} || 5,
     });
 

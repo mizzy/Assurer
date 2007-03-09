@@ -18,6 +18,7 @@ GetOptions(
     '--shell'    => \my $shell,
     '--role=s'   => \my $role,
     '--para=s'   => \my $para,
+    '--user=s'   => \my $user,
 );
 
 Getopt::Long::Configure('bundling');
@@ -33,6 +34,7 @@ Assurer->bootstrap({
     shell  => $shell,
     role   => $role,
     para   => $para,
+    user   => $user,
 });
 
 exit;
