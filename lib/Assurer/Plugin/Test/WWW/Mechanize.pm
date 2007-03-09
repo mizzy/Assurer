@@ -43,12 +43,10 @@ sub load_plugin_perl {
 
     $code = join "\n",
         (
-            'use strict;',
             'my $conf = $self->conf;',
             'my $host = $conf->{host} || $self->{context}->conf->{host};',
             'my $mech = Assurer::Test::WWW::Mechanize->new;',
             $code,
-            '1;',
         );
 
     eval $code;
