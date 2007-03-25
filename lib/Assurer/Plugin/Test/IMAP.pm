@@ -23,7 +23,7 @@ sub connect {
     my $imap = Net::IMAP::Simple->new( $host,
         [ port => $port, timeout => $timeout ] );
 
-    ok( $imap, "smtp ok $host" );
+    ok( $imap, "imap ok $host" );
 }
 
 1;
