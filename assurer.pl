@@ -18,6 +18,7 @@ GetOptions(
     '--shell'    => \my $shell,
     '--role=s'   => \my $role,
     '--para=s'   => \my $para,
+    '--discover' => \my $discover,
     '--user=s'   => \my $user,
 );
 
@@ -28,12 +29,15 @@ if ($version) {
     exit;
 }
 
+die 'You should be root for --discover' if $discover and $< > 0;
+
 Assurer->bootstrap({
     config => $config,
     host   => $host,
     shell  => $shell,
     role   => $role,
     para   => $para,
+    discover => $discover,
     user   => $user,
 });
 

@@ -13,6 +13,7 @@ use Assurer::Dispatch;
 use UNIVERSAL::require;
 use Encode;
 use Assurer::Shell;
+use Assurer::Discover;
 
 __PACKAGE__->mk_accessors( qw/ test / );
 
@@ -30,6 +31,9 @@ sub bootstrap {
 
     if ( $opts->{shell} ) {
         $self->shell($opts);
+    }
+    elsif ( $opts->{discover} ){
+        $self->discover($opts);
     }
     else {
         $self->run;
@@ -73,19 +77,25 @@ sub new {
     return $self;
 }
 
-sub shell {
-    my ( $self, $opts ) = @_;
+sub get_hosts_by_role {
+    my ($self, $search_role) = @_;
 
     my @hosts;
     for my $host ( @{ $self->{hosts} } ) {
-        if ( my $role = $opts->{role} ) {
+        if ( my $role = $search_role ) {
             push @hosts, $host if $host->{role} eq $role;
         }
         else {
             push @hosts, $host;
         }
     }
+    return @hosts;
+}
 
+sub shell {
+    my ( $self, $opts ) = @_;
+
+    my @hosts = $self->get_hosts_by_role( $opts->{role} );
     my $shell = Assurer::Shell->new({
         context => $self,
         config  => $self->{config},
@@ -95,6 +105,19 @@ sub shell {
     });
 
     $shell->run_loop;
+}
+
+sub discover {
+	my ($self, $opts) = @_;
+
+	my @hosts = $self->get_hosts_by_role( $opts->{role} );
+	my $discover = Assurer::Discover->new({
+            context => $self,
+            config  => $self->{config},
+            hosts   => \@hosts,
+            para    => $opts->{para},
+	});
+	$discover->run_discover;
 }
 
 sub run {

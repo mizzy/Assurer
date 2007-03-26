@@ -1,0 +1,5 @@
+- module: HTTP
+  name: HTTP Test
+  config:
+    scheme: http
+  role: web
