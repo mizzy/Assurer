@@ -10,12 +10,12 @@ use Assurer;
 our @EXPORT
     = qw(test_requires has_network test_requires_network test_requires_command test_plugin_deps test_plugin_deps run_eval_expected run_eval_expected_with_capture test_requires_root);
 
-our ( $BaseDir );
+our ( $base_dir );
 {
     my @path = File::Spec->splitdir( $FindBin::Bin );
     while ( defined( my $dir = pop @path ) ) {
         if ( $dir eq 't' ) {
-            $BaseDir = File::Spec->catfile( @path );
+            $base_dir = File::Spec->catfile( @path );
             last;
         }
     }
@@ -176,7 +176,7 @@ sub test_plugin_deps() {
     $mod ||= File::Basename::basename( $FindBin::Bin );
     $mod =~ s!::!-!g;
 
-    my $file = File::Spec->catfile( $BaseDir, "deps", "$mod.yaml" );
+    my $file = File::Spec->catfile( $base_dir, "deps", "$mod.yaml" );
     unless ( -e $file ) {
         warn "Can't find deps file for $mod" unless $no_warning;
         return;
@@ -283,7 +283,7 @@ sub config {
     $config->{ global }->{ log }->{ level } ||= 'error'
         unless $ENV{ TEST_VERBOSE };
 
-# $config->{global}->{assets_path}   ||= File::Spec->catfile($t::TestAssurer::BaseDir, 'assets');
+# $config->{global}->{assets_path}   ||= File::Spec->catfile($t::TestAssurer::base_dir, 'assets');
 # $config->{global}->{cache}->{base} ||= File::Temp::tempdir(CLEANUP => 1);
 # use Data::Dumper;
 # warn Dumper($config);

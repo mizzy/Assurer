@@ -10,7 +10,7 @@ use YAML;
 sub new {
     my ($class, $basedir) = @_;
     my $self = {
-        BaseDir => $basedir,
+        base_dir => $basedir,
     };
     
     bless $self, $class;
@@ -39,7 +39,7 @@ sub load {
         croak "Assurer::ConfigLoader->load: $stuff: $!";
     }
 
-    my $schema_file = File::Spec->catfile( $self->{BaseDir}, 'assets', 'kwalify', 'schema.yaml' );
+    my $schema_file = File::Spec->catfile( $self->{base_dir}, 'assets', 'kwalify', 'schema.yaml' );
     my $schema = YAML::LoadFile( $schema_file );
     
     eval { validate( $schema, $config ) };
@@ -55,7 +55,7 @@ sub load {
 sub _validate_plugin_config {
     my ( $self, $config, $type ) = @_;
 
-    my $schema_dir = File::Spec->catfile($self->{BaseDir}, 'assets', 'kwalify', 'plugins');
+    my $schema_dir = File::Spec->catfile($self->{base_dir}, 'assets', 'kwalify', 'plugins');
 
     for my $plugin ( @{ $config->{$type} } ) {
         $type = ucfirst $type;
