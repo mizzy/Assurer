@@ -21,6 +21,9 @@ sub new {
 
     $self->{cmd} = "$FindBin::Bin/assurer_test.pl";
 
+    if (!-f $self->{cmd}){
+        $self->{cmd} = $self->{context}{BaseDir}."/assurer_test.pl";
+    }
     bless $self, $class;
     return $self;
 }
