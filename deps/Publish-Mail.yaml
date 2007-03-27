@@ -1,0 +1,4 @@
+name: Publish::Term
+author: Franck Cuny Gosuke Miyashita
+depends:
+  MIME::Lite: 0

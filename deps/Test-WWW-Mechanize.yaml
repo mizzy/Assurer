@@ -1,0 +1,5 @@
+name: Test::WWW::Mechanize
+author: Gosuke Miyashita
+depends:
+  DirHandle: 0
+  File::Spec: 0
