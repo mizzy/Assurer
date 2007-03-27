@@ -1,0 +1,6 @@
+- module: DBI
+  config:
+    dsn:      dbi:mysql:;hostname=%s
+    user:     root
+    password:
+  role: db

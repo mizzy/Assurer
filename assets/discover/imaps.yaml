@@ -1,0 +1,5 @@
+- module: IMAP
+  name: IMAP Test
+  config:
+    timeout: 5
+  role: imap
