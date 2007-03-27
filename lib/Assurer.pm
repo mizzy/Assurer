@@ -12,6 +12,7 @@ use Assurer::ConfigLoader;
 use Assurer::Dispatch;
 use UNIVERSAL::require;
 use Encode;
+use File::Spec;
 use Assurer::Shell;
 use Assurer::Discover;
 
@@ -47,7 +48,18 @@ sub new {
 
     my $self = bless { %$opts }, $class;
 
-    my $config_loader = Assurer::ConfigLoader->new;
+    # basedir, for test and configloader
+    my @path = File::Spec->splitdir($FindBin::Bin);
+    my $BaseDir = File::Spec->catfile(@path);
+    while (defined(my $dir = pop @path)) {
+        if ($dir eq 't') {
+            $BaseDir = File::Spec->catfile(@path);
+            last;
+        }
+    }
+    $self->{BaseDir} = $BaseDir;
+    
+    my $config_loader = Assurer::ConfigLoader->new($self->{BaseDir});
     $self->{config} = $config_loader->load($opts->{config}, $self);
     $self->{config}->{global}->{host} ||= $opts->{host};
     Assurer->set_context($self);
