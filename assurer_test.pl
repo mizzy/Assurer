@@ -6,7 +6,9 @@ use warnings;
 use FindBin;
 use File::Spec;
 use Getopt::Long;
-use lib File::Spec->catdir($FindBin::Bin, 'lib');
+
+# for using lib for tests, we add t/core
+use lib (File::Spec->catdir($FindBin::Bin, 'lib'), File::Spec->catdir($FindBin::Bin, 't', 'core'));
 
 use Assurer;
 use YAML;
