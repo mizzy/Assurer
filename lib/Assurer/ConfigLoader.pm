@@ -7,11 +7,14 @@ use Carp;
 use Kwalify qw(validate);
 use YAML;
 
-my $assets_dir = File::Spec->catfile($FindBin::Bin, 'assets');
-
 sub new {
-    my $class = shift;
-    bless {}, $class;
+    my ($class, $basedir) = @_;
+    my $self = {
+        BaseDir => $basedir,
+    };
+    
+    bless $self, $class;
+    return $self;
 }
 
 sub load {
@@ -36,12 +39,12 @@ sub load {
         croak "Assurer::ConfigLoader->load: $stuff: $!";
     }
 
-    my $schema_file = File::Spec->catfile( $assets_dir, 'kwalify', 'schema.yaml' );
+    my $schema_file = File::Spec->catfile( $self->{BaseDir}, 'assets', 'kwalify', 'schema.yaml' );
     my $schema = YAML::LoadFile( $schema_file );
-
+    
     eval { validate( $schema, $config ) };
     $context->error($@) if $@;
-
+    
     for ( qw/ test format notify publish / ) {
         $self->_validate_plugin_config($config, $_);
     }
@@ -52,7 +55,7 @@ sub load {
 sub _validate_plugin_config {
     my ( $self, $config, $type ) = @_;
 
-    my $schema_dir = File::Spec->catfile($assets_dir, 'kwalify', 'plugins');
+    my $schema_dir = File::Spec->catfile($self->{BaseDir}, 'assets', 'kwalify', 'plugins');
 
     for my $plugin ( @{ $config->{$type} } ) {
         $type = ucfirst $type;
