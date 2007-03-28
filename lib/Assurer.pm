@@ -14,7 +14,6 @@ use UNIVERSAL::require;
 use Encode;
 use File::Spec;
 use Assurer::Shell;
-use Assurer::Discover;
 
 __PACKAGE__->mk_accessors( qw/ test / );
 
@@ -121,6 +120,8 @@ sub shell {
 
 sub discover {
 	my ($self, $opts) = @_;
+
+        Assurer::Discover->require;
 
 	my @hosts = $self->get_hosts_by_role( $opts->{role} );
 	my $discover = Assurer::Discover->new({
