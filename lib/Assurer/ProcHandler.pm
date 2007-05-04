@@ -25,7 +25,7 @@ sub new {
 
 sub start_gearmand {
     my $self = shift;
-    my $gearmand = Assurer->context->conf->{gearman}->{gearmand} || 'gearman';
+    my $gearmand = Assurer->context->conf->{gearman}->{gearmand} || 'gearmand';
     $self->{gearmand} = Proc::Background->new( $self->{opts}, $gearmand );
 
     my $worker = Gearman::Worker->new;
