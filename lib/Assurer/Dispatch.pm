@@ -2,12 +2,8 @@ package Assurer::Dispatch;
 
 use strict;
 use warnings;
-
 use Assurer::Result;
-use YAML;
-use MIME::Base64;
 use FindBin;
-use POE qw( Wheel::Run Component::JobQueue );
 use Test::Harness::Straps;
 use Gearman::Client::Async;
 use Storable qw( freeze );

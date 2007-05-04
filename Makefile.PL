@@ -8,15 +8,15 @@ requires 'Class::Accessor::Fast';
 requires 'Test::TAP::Model' => 0.08;
 requires 'UNIVERSAL::require';
 requires 'YAML';
-requires 'MIME::Base64';
-requires 'POE';
-requires 'Term::Shell';
-requires 'Parallel::ForkManager';
 requires 'Kwalify';
 requires 'Net::SSH';
+requires 'Term::ANSIColor';
 requires 'Term::ReadLine';
-requires 'POE::Component::JobQueue';
 requires 'Test::WWW::Mechanize';
+requires 'Proc::Background';
+requires 'Gearman::Client::Async';
+requires 'Gearman::Worker';
+requires 'Danga::Socket';
 
 build_requires('YAML');
 
