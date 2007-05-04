@@ -5,6 +5,7 @@ use warnings;
 use Proc::Background;
 use FindBin;
 use base qw( Class::Accessor::Fast );
+use Gearman::Worker;
 
 my $gearman_test_worker  = "$FindBin::Bin/bin/gearman_test_worker.pl";
 my $gearman_shell_worker = "$FindBin::Bin/bin/gearman_shell_worker.pl";
@@ -26,7 +27,12 @@ sub start_gearmand {
     my $self = shift;
     my $gearmand = Assurer->context->conf->{gearman}->{gearmand} || 'gearman';
     $self->{gearmand} = Proc::Background->new( $self->{opts}, $gearmand );
-    sleep 1;
+
+    my $worker = Gearman::Worker->new;
+    while ( 1 ) {
+        last if $worker->_get_js_sock('127.0.0.1:7003');
+        sleep 1;
+    }
 }
 
 sub start_test_workers {
