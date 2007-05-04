@@ -14,6 +14,7 @@ use UNIVERSAL::require;
 use Encode;
 use File::Spec;
 use Assurer::Shell;
+use Assurer::ProcHandler;
 
 __PACKAGE__->mk_accessors( qw/ test / );
 
@@ -60,13 +61,25 @@ sub new {
 
     my $config_loader = Assurer::ConfigLoader->new($self->{base_dir});
     $self->{config} = $config_loader->load($opts->{config}, $self);
-    $self->{config}->{global}->{host} ||= $opts->{host};
+
+    my $global = $self->{config}->{global};
+    $global->{host} ||= $opts->{host};
+    $global->{para} ||= $opts->{para} || 5;
+
+    my $gearman = $global->{gearman};
+
+    $global->{gearman}->{start_workers} = 1
+        unless defined $global->{gearman}->{start_workers};
+
+    $global->{gearman}->{start_gearmand} = 1
+        unless defined $global->{gearman}->{start_gearmand};
+
     Assurer->set_context($self);
 
     $self->conf->{log} ||= { level => 'debug' };
 
     if ( eval { require Term::Encoding } ) {
-        $self->{confing}->{global}->{log}->{encoding} ||= Term::Encoding::get_encoding();
+        $global->{log}->{encoding} ||= Term::Encoding::get_encoding();
     }
 
     if ( my $hosts = $self->{config}->{hosts} ) {
@@ -84,6 +97,8 @@ sub new {
             }
         }
     }
+
+    $self->{proc_handler} = Assurer::ProcHandler->new;
 
     return $self;
 }
@@ -106,13 +121,20 @@ sub get_hosts_by_role {
 sub shell {
     my ( $self, $opts ) = @_;
 
+    my $proc_handler = $self->{proc_handler};
+    my $gearman      = $self->conf->{gearman};
+
+    $proc_handler->start_gearmand      if $gearman->{start_gearmand};
+    $proc_handler->start_test_workers  if $gearman->{start_workers};
+    $proc_handler->start_shell_workers if $gearman->{start_workers};
+
     my @hosts = $self->get_hosts_by_role( $opts->{role} );
     my $shell = Assurer::Shell->new({
         context => $self,
         config  => $self->{config},
         hosts   => \@hosts,
         user    => $opts->{user},
-        para    => $opts->{para} || 5,
+        para    => $opts->{para} || $self->conf->{para} || 5,
     });
 
     $shell->run_loop;
@@ -138,6 +160,9 @@ sub run {
     $args ||= {};
 
     $self->load_plugins;
+
+    $self->{proc_handler}->start_gearmand if $self->conf->{gearman}->{start_gearmand};
+    $self->{proc_handler}->start_test_workers if $self->conf->{gearman}->{start_workers};
 
     my $dispatch = Assurer::Dispatch->new({
         context => $context,

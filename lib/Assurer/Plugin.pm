@@ -15,7 +15,7 @@ sub new {
     my $self = { %$args };
     bless $self, $class;
 
-    $self->init;
+    $self->init($args);
 
     return $self;
 }

@@ -32,13 +32,13 @@ if ($version) {
 die 'You should be root for --discover' if $discover and $< > 0;
 
 Assurer->bootstrap({
-    config => $config,
-    host   => $host,
-    shell  => $shell,
-    role   => $role,
-    para   => $para,
+    config   => $config,
+    host     => $host,
+    shell    => $shell,
+    role     => $role,
+    para     => $para,
     discover => $discover,
-    user   => $user,
+    user     => $user,
 });
 
 exit;

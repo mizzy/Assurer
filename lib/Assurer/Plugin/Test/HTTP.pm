@@ -20,11 +20,11 @@ sub status {
     my $host = $conf->{ host } || $context->conf->{ host };
     my $agent = $conf->{ agent }
         || "Assurer/$Assurer::VERSION (http://assurer.jp/)";
-    
+
     my $port   = $conf->{ port }   || '80';
     my $path   = $conf->{ path }   || '/';
     my $scheme = $conf->{ scheme } || $port eq '80' ? 'http' : 'https';
-    
+
     # check if the host have allready the scheme and port
     if ($host !~ /$scheme/){
         $host = "$scheme://$host";
@@ -33,11 +33,11 @@ sub status {
     if ($host !~ /$port/){
         $host = "$host:$port";
     }
-    
+
     if ($host !~ /$path/){
         $host = "$host$path";
     }
-    
+
     $path = "/$path" if $path !~ m!^/!;
     $self->{ url } = $conf->{ uri } || $host;
     my $code = $conf->{ code } || 200;

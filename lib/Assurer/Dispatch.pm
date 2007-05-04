@@ -9,9 +9,8 @@ use MIME::Base64;
 use FindBin;
 use POE qw( Wheel::Run Component::JobQueue );
 use Test::Harness::Straps;
-use Storable;
-
-my @jobs;
+use Gearman::Client::Async;
+use Storable qw( freeze );
 
 sub new {
     my ( $class, $args ) = @_;
@@ -19,11 +18,6 @@ sub new {
         context => $args->{context},
     };
 
-    $self->{cmd} = "$FindBin::Bin/assurer_test.pl";
-
-    if (!-f $self->{cmd}){
-        $self->{cmd} = $self->{context}{base_dir}."/assurer_test.pl";
-    }
     bless $self, $class;
     return $self;
 }
@@ -33,6 +27,7 @@ sub run {
 
     my $context = $self->{context};
 
+    my @jobs;
     my $hosts = $context->hosts;
     for my $plugin ( @{ $context->{config}->{test} } ) {
         if ( @$hosts and !defined $plugin->{config}->{host} and !defined $plugin->{config}->{uri} ) {
@@ -48,140 +43,58 @@ sub run {
         }
     }
 
-    POE::Component::JobQueue->spawn(
-        Alias       => 'passive',
-        WorkerLimit => $context->conf->{para} || 8,
-        Worker      => sub { $self->_create_session },
-        Passive => { },
+    $self->run_tests(@jobs);
+}
+
+sub run_tests {
+    my ( $self, @jobs ) = @_;
+
+    my $client = Gearman::Client::Async->new( job_servers => ['127.0.0.1'] );
+
+    my ( @tasks, $adder );
+    my $i = 0;
+    $adder = sub {
+        my $plugin = $jobs[$i];
+        my $task = Gearman::Task->new(
+            'test',
+            \( freeze([ $plugin, $self->{context} ]) ),
+            +{
+                on_complete => sub { $self->on_complete(${$_[0]}, $plugin) }
+            },
+        );
+        $client->add_task($task);
+        push @tasks, $task;
+
+        $i++;
+
+        if ( $i < @jobs ) {
+            Danga::Socket->AddTimer( 0 => $adder );
+        }
+    };
+    Danga::Socket->AddTimer( 0 => $adder );
+
+    Danga::Socket->SetPostLoopCallback(
+        sub { scalar(grep { ! $_->is_finished } @tasks) }
     );
 
-    POE::Session->create(
-        inline_states => {
-            _start      => sub {
-                my $kernel = $_[KERNEL];
-                $kernel->yield( 'flood_queue' );
-            },
-            flood_queue => sub {
-                my $kernel = $_[KERNEL];
-                foreach ( 0 .. $#jobs ) {
-                    $kernel->post( passive => enqueue => response => $_ );
-                }
-                $kernel->yield( 'dummy' );
-            },
-            #response    => \&passive_respondee_response,
-            # quiets ASSERT_DEFAULT
-            _stop       => sub {},
-            dummy       => sub {},
-        },
-    );
-    $poe_kernel->sig( CHLD => '' );
-    $poe_kernel->run;
+    Danga::Socket->EventLoop;
 }
 
-sub _create_session {
-    my $self = shift;
+sub on_complete {
+    my ( $self, $results, $plugin ) = @_;
 
-    my $plugin = pop @jobs;
-
-    my $encoded_conf = MIME::Base64::encode( Dump($plugin) );
-    $encoded_conf =~ s/\n//g;
-
-    my $encoded_context = MIME::Base64::encode( Dump($self->{context}) );
-    $encoded_context =~ s/\n//g;
-
-    my $host = $self->_get_host_exec_on;
-    my %program;
-    if ( $host ne 'localhost' ) {
-        %program = (
-            Program     => [ 'ssh' ],
-            ProgramArgs => [
-                $host,
-                $self->{cmd},
-                "--config=$encoded_conf",
-                "--context=$encoded_context",
-            ],
-        );
-    }
-    else {
-        %program = (
-            Program     => [ $self->{cmd} ],
-            ProgramArgs => [
-                "--config=$encoded_conf",
-                "--context=$encoded_context",
-            ],
-        );
-    }
-
-    POE::Session->create(
-        inline_states =>
-            { _start    => sub {
-                  my ($kernel, $heap, $session) = @_[KERNEL, HEAP, SESSION];
-
-                  $heap->{context} = $self->{context};
-                  $heap->{name}    = $plugin->{name};
-                  $heap->{stdout}  = [];
-                  $heap->{stderr}  = [];
-                  $heap->{host}    = $plugin->{config}->{host};
-                  $heap->{child} = POE::Wheel::Run->new(
-                      %program,
-                      StdoutEvent => "stdout",
-                      StderrEvent => "stderr",
-                      CloseEvent  => "close",
-                  );
-              },
-              stdout => \&_stdout,
-              stderr => \&_stderr,
-              close  => sub { $self->_close(@_) },
-          }
-        );
-}
-
-sub _stdout {
-    push @{ $_[HEAP]->{stdout} }, $_[ARG0];
-}
-
-sub _stderr {
-    my $heap = $_[HEAP];
-    my $str = $_[ARG0];
-
-    if ( $str =~ /^Assurer::.+ \[.+\]/ ) {
-        warn "$str\n";
-    }
-    else {
-        $heap->{context}->log( debug => $_[ARG0] );
-    }
-}
-
-sub _close {
-    my $self = shift;
-    my $heap = $_[HEAP];
-    my $name = $heap->{name};
-    $name .=  ' on ' . $heap->{host} if $heap->{host};
+    my @results = split '\n', $results;
+    my $name   = $plugin->{name};
+    my $host   = $plugin->{config}->{host};
+    $name .=  ' on ' . $host if $host;
 
     my $result = Assurer::Result->new({
         name  => $name,
-        host  => $heap->{host},
-        strap => Test::Harness::Straps->new->analyze($name, $heap->{stdout}),
+        host  => $host,
+        strap => Test::Harness::Straps->new->analyze($name, \@results),
     });
 
     $self->{context}->add_result($result);
-    delete $heap->{child};
-}
-
-my $cnt = 0;
-sub _get_host_exec_on {
-    my $self = shift;
-
-    my $hosts = $self->{context}->{config}->{exec_on};
-    if ( $hosts ) {
-        my $host = $hosts->[$cnt++]->{host};
-        $cnt = 0 if $cnt > $#{$hosts};
-        return $host;
-    }
-    else {
-        return 'localhost';
-    }
-
 }
 
 1;

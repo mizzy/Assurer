@@ -4,8 +4,16 @@ mapping:
     name: global
     desc: assurer's global configuration = $self->{conf}
     type: map
-    required: true
     mapping:
+      gearman:
+        type: map
+        mapping:
+          gearmand:
+            type: str
+          start_workers:
+            type: int
+          start_gearmand:
+            type: int
       "no_diag":
         name: no_diag
         desc: "??"

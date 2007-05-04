@@ -6,7 +6,8 @@ use Net::SSH;
 use Term::ReadLine;
 use Data::Dumper;
 use Term::ANSIColor;
-use Storable;
+use Storable qw( freeze );
+use Gearman::Client::Async;
 
 sub new {
     my ( $class, $args ) = @_;
@@ -27,12 +28,12 @@ sub run_loop {
     eval { $term->stifle_history( $HISTSIZE ); };
 
     if ( @! ) {
-        $self->{ context }
+        $self->{context}
             ->log( 'debug' => "You will need Term::ReadLine::Gnu" );
     } else {
         if ( -f $HISTFILE ) {
             $term->ReadHistory( $HISTFILE )
-                or $self->{ context }
+                or $self->{context}
                 ->log( 'warn' => "cannot read history file: $!" );
         }
     }
@@ -46,7 +47,7 @@ sub run_loop {
 
     eval { $term->WriteHistory( $HISTFILE ); };
     if ( @! ) {
-        $self->{ context }
+        $self->{context}
             ->log( 'debug' => "perlsh: cannot write history file: $!" );
     }
 }
@@ -59,11 +60,6 @@ my %cmd_map = (
 
 sub catch_run {
     my ( $self, $cmd ) = @_;
-
-    $self->{ parallel }
-        = $self->{ context }->{ config }->{ global }->{ parallel }
-        || 'Assurer::Parallel::ForkManager';
-    $self->{ parallel }->use or die $@;
 
     if ( $cmd =~ /^!([^\s]+)/ ) {
         my $method = $cmd_map{$1};
@@ -138,21 +134,44 @@ sub process_role {
 
 sub process_command {
     my ( $self, $cmd, $hosts ) = @_;
-    my $manager = $self->{ parallel }->new;
 
-    my @hosts = map { $_->{ host } } @{ $self->{ hosts } };
-    $manager->run( {
-           elems => $hosts || \@hosts,
-           callback => sub {
-               my $server = shift;
-               $self->callback( $server, $cmd );
-           },
-           num => $self->{ para },
-        } );
+    my @hosts = map { $_->{host} } @{ $self->{hosts} };
+
+    my $client = Gearman::Client::Async->new( job_servers => ['127.0.0.1'] );
+
+    my ( @tasks, $adder );
+    my $i = 0;
+    $adder = sub {
+        my $host = $hosts[$i];
+        my $task = Gearman::Task->new(
+            'shell',
+            \( freeze([ $host, $cmd, $self->{user} ]) ),
+            +{
+                on_complete => sub { print ${$_[0]}; }
+            },
+        );
+        $client->add_task($task);
+        push @tasks, $task;
+
+        $i++;
+
+        if ( $i < @hosts ) {
+            Danga::Socket->AddTimer( 0 => $adder );
+        }
+    };
+    Danga::Socket->AddTimer( 0 => $adder );
+
+    Danga::Socket->SetPostLoopCallback(
+        sub { scalar(grep { ! $_->is_finished } @tasks) }
+    );
+
+    Danga::Socket->EventLoop;
 }
 
 sub process_test {
     my ( $self, $input ) = @_;
+
+    my $context = $self->{context};
 
     my ( $test, $action, $args ) = ( $input =~ m/^!test\s+(\w+)\s?(on|with)?\s?(.*)?$/ );
 
@@ -196,7 +215,12 @@ sub process_test {
 
         for my $role ( @roles ) {
             my $hosts = $self->{config}->{hosts}->{$role};
-            print "[WARNING] no such role: $role\n" unless $hosts;
+
+            unless ( $hosts ) {
+                print "[WARNING] no such role: $role\n";
+                return;
+            }
+
             for my $host ( @$hosts ) {
                 for my $plugin ( @plugins ) {
                     my $clone = Storable::dclone($plugin);
@@ -206,51 +230,26 @@ sub process_test {
             }
         }
     }
-    $self->run_test(@jobs);
-}
 
-sub run_test {
-    my ( $self, @jobs ) = @_;
+    my $dispatcher = Assurer::Dispatch->new({ context => $context });
+    $dispatcher->run_tests(@jobs);
 
-    my $context = $self->{context};
-    for my $job ( @jobs ) {
-        my $class = 'Assurer::Plugin::Test::' . $job->{module};
-        $class->use or die $@;
-        my $plugin = $class->new({ %$job, context => $self->{context} });
+    require Assurer::Plugin::Format::Text;
+    require Assurer::Plugin::Publish::Term;
 
-        $plugin->register;
-        $plugin->pre_run( $self->{context} );
+    push @{ $context->{hooks}->{format} }, Assurer::Plugin::Format::Text->new({})
+        unless $context->{hooks}->{format};
+    push @{ $context->{hooks}->{publish} }, Assurer::Plugin::Publish::Term->new({})
+        unless $context->{hooks}->{publish};
 
-        my $retry    = $plugin->conf->{retry}    || $context->conf->{retry}    || 3;
-        my $interval = $plugin->conf->{interval} || $context->conf->{interval} || 3;
+    $context->run_hook('format', { results => $context->results });
 
-        my $results;
-        for my $test ( @{ $plugin->tests } ) {
-            my $retry_count = 0;
-            for ( 1 .. $retry ) {
-                my $result = $plugin->$test($context);
-                next unless $result;
-                if ( $result =~ /^not ok/ ) {
-                    $retry_count++;
-                    if ( $retry_count < $retry ) {
-                        $plugin->{test}->decr_count;
-                        sleep $interval;
-                    }
-                    else {
-                        $results .= "$result\n";
-                    }
-                }
-                else {
-                    $results .= "$result\n";
-                    last;
-                }
-            }
-        }
-
-        $self->publish_shell($results);
-        ${ $plugin->{test}->{count} } = 0;
-        $plugin->post_run;
+    for my $format ( @{ $context->formats || [] } ) {
+        $context->run_hook('publish', { format => $format });
     }
+
+    $context->{formats} = [];
+    $context->{results} = [];
 }
 
 sub set_host {
@@ -271,35 +270,6 @@ sub set_host {
     }
 
     return @jobs;
-}
-
-sub publish_shell {
-    my ( $self, $results ) = @_;
-
-    for my $result ( split "\n", $results ) {
-        if ( $result =~ /^ok/ ) {
-            print color 'green';
-        } elsif ( $result =~ /^not ok/ ) {
-            print color 'red';
-        }
-        print $result. "\n";
-    }
-
-    print color 'reset';
-    print "\n";
-}
-
-sub callback {
-    my ( $self, $server, $cmd ) = @_;
-    $server = join '@', $self->{user}, $server if defined $self->{user};
-    Net::SSH::sshopen2( $server, *READER, *WRITER, $cmd );
-    $server =~ s/.*@//;
-    while ( <READER> ) {
-        chomp;
-        print "[$server] $_\n";
-    }
-    close READER;
-    close WRITER;
 }
 
 sub help {
