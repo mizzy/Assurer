@@ -1,0 +1,4 @@
+name: Test::SSH::SupportedAuth
+author: HIROSE Masaaki
+depends:
+  Net::Scan::SSH::Server::SupportedAuth: 0

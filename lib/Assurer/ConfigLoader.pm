@@ -12,7 +12,7 @@ sub new {
     my $self = {
         base_dir => $basedir,
     };
-    
+
     bless $self, $class;
     return $self;
 }
@@ -41,10 +41,10 @@ sub load {
 
     my $schema_file = File::Spec->catfile( $self->{base_dir}, 'assets', 'kwalify', 'schema.yaml' );
     my $schema = YAML::LoadFile( $schema_file );
-    
+
     eval { validate( $schema, $config ) };
     $context->error($@) if $@;
-    
+
     for ( qw/ test format notify publish / ) {
         $self->_validate_plugin_config($config, $_);
     }
@@ -59,7 +59,10 @@ sub _validate_plugin_config {
 
     for my $plugin ( @{ $config->{$type} } ) {
         $type = ucfirst $type;
-        my $schema_file = File::Spec->catfile($schema_dir, "$type-$plugin->{module}.yaml");
+        my $module = $plugin->{module};
+        $module =~ s/::/-/g;
+
+        my $schema_file = File::Spec->catfile($schema_dir, "$type-$module.yaml");
         next unless -e $schema_file;
         my $schema = YAML::LoadFile( $schema_file );
         eval { validate( $schema, $plugin->{config} ) };

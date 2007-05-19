@@ -201,7 +201,7 @@ sub run_hook {
         }
         elsif ( $hook eq 'publish' ) {
             if ( $plugin->filter ) {
-                return unless $plugin->filter->dispatch($args);
+                next unless $plugin->filter->dispatch($args);
             }
         }
 

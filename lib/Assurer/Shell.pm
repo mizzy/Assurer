@@ -4,7 +4,6 @@ use strict;
 use warnings;
 use Net::SSH;
 use Term::ReadLine;
-use Data::Dumper;
 use Term::ANSIColor;
 use Storable qw( freeze );
 use Gearman::Client::Async;
@@ -243,10 +242,7 @@ sub process_test {
         unless $context->{hooks}->{publish};
 
     $context->run_hook('format', { results => $context->results });
-
-    for my $format ( @{ $context->formats || [] } ) {
-        $context->run_hook('publish', { format => $format });
-    }
+    $context->run_hook('publish', { format => $context->formats->[0] });
 
     $context->{formats} = [];
     $context->{results} = [];
