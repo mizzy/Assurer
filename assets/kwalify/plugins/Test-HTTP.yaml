@@ -16,3 +16,9 @@ mapping:
     type: str
   server:
     type: str
+  scraper:
+    type: any
+  uri:
+    type: str
+  match:
+    type: any
