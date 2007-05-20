@@ -3,3 +3,4 @@ author: Gosuke Miyashita
 depends:
   LWP::UserAgent: 0
   HTTP::Request: 0
+  Web::Scraper::Config: 0
