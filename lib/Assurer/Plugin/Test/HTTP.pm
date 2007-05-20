@@ -104,7 +104,7 @@ Assurer::Plugin::Test::HTTP - Test for HTTP
 =head1 SYNOPSIS
 
   - module: HTTP
-    name: Web::Scraper test
+    name: HTTP test
     config:
       content: It works!
     role: web
