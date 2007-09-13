@@ -65,6 +65,7 @@ sub _validate_plugin_config {
         my $schema_file = File::Spec->catfile($schema_dir, "$type-$module.yaml");
         next unless -e $schema_file;
         my $schema = YAML::LoadFile( $schema_file );
+        $schema->{mapping}->{retry}->{type} = 'int';
         eval { validate( $schema, $plugin->{config} ) };
         $self->{context}->error("Config error in ${type}::$plugin->{module}\n$@") if $@;
     }
